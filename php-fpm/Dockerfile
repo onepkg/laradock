@@ -28,9 +28,9 @@ ENV DEBIAN_FRONTEND noninteractive
 ARG CHANGE_SOURCE=false
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
     # Change application source from deb.debian.org to aliyun source
-    sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
-    sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
-    sed -i 's/security-cdn.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
+    sed -i 's/security-cdn.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list \
 ;fi
 
 # always run apt update when start and after add new source list, then clean up at end.
@@ -1033,7 +1033,11 @@ USER root
 ARG INSTALL_DOCKER_CLIENT=false
 
 RUN if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz && \
+    if [ ${CHANGE_SOURCE} = true ]; then \
+      curl -sS https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz ; \
+    else \
+      curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz ; \
+    fi ; \
     tar -xzf /tmp/docker.tar.gz -C /tmp/ && \
     cp /tmp/docker/docker* /usr/local/bin && \
     chmod +x /usr/local/bin/docker* \
