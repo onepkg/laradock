@@ -1459,9 +1459,9 @@ RUN set -eux; \
   ###########################################################################
   if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
     if [ ${CHANGE_SOURCE} = true ]; then \
-      curl -sS https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz ; \
+      curl -sS https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-29.1.3.tgz -o /tmp/docker.tar.gz ; \
     else \
-      curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz ; \
+      curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-29.1.3.tgz -o /tmp/docker.tar.gz ; \
     fi ; \
     tar -xzf /tmp/docker.tar.gz -C /tmp/; \
     cp /tmp/docker/docker* /usr/local/bin; \
