@@ -332,6 +332,7 @@ services:
         - DOCKER_TLS_CERTDIR=/certs
         - DOCKER_CERT_PATH=/certs/client
         - CHOKIDAR_USEPOLLING=true
+        - NODE_OPTIONS=--openssl-legacy-provider
       networks:
         - frontend
         - backend
