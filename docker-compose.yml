@@ -480,7 +480,7 @@ services:
         - frontend
         - backend
       extra_hosts:
-        - "host.docker.internal:host-gateway"  
+        - "host.docker.internal:host-gateway"
 
 ### OpenResty Server #########################################
     openresty:
@@ -2225,7 +2225,7 @@ services:
         - frontend
         - backend
       restart: always
-  
+
   ### keycloak ##################################################
     keycloak:
       image: bitnami/keycloak:${KEYCLOAK_VERSION}
@@ -2246,3 +2246,27 @@ services:
       networks:
         - frontend
         - backend
+
+  ### Golang ##################################################
+    golang:
+      restart: always
+      build:
+        context: ./golang
+        args:
+          - LARADOCK_GOLANG_VERSION=1.24
+          - http_proxy
+          - https_proxy
+          - no_proxy
+      volumes:
+        - ~/code/demo/go-app:/app
+        - ${DATA_PATH_HOST}/golang:/go/pkg/mod
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      ports:
+        - "9999:9999"
+        - "2345:2345"
+      networks:
+        - frontend
+        - backend
+      links:
+        - docker-in-docker
