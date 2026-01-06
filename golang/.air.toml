@@ -1,0 +1,27 @@
+# .air.toml
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# 编译命令（可自定义，如 -tags=dev）
+cmd = "go build -o ./tmp/main ./main.go"
+# 可执行文件路径
+bin = "./tmp/main"
+# 监听的文件后缀（新增/修改/删除时触发重载）
+include_ext = ["go", "mod", "sum", "toml", "yml"]
+# 忽略的目录/文件（不监听）
+exclude_dir = ["tmp", "vendor", ".git", ".vscode"]
+# 监听的目录（默认监听所有目录）
+include_dir = ["."]
+# 不监听的文件后缀
+exclude_ext = ["md", "txt", "log"]
+
+[log]
+# 日志输出格式
+time_format = "2006-01-02 15:04:05"
+# 输出颜色（true=彩色，false=黑白）
+color = true
+
+[live_reload]
+# 热重载延迟（毫秒，避免频繁触发）
+delay = 300
