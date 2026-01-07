@@ -155,6 +155,7 @@ services:
         - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
         - docker-in-docker:/certs/client
+        - ${DATA_PATH_HOST}/vscode-server/coniestore:/root/.vscode-server
       expose:
         - "9000"
       dns:
@@ -317,6 +318,7 @@ services:
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
         - docker-in-docker:/certs/client
         - ./php-worker/supervisord.d:/etc/supervisord.d
+        - ${DATA_PATH_HOST}/vscode-server/workspace:/root/.vscode-server
       dns:
         - 8.8.8.8
         - 114.114.114.114
