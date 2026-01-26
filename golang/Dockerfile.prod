@@ -1,0 +1,20 @@
+# 阶段 1：构建（开发环境镜像复用）
+FROM golang:1.24-bullseye AS builder
+
+ENV GOPROXY=https://goproxy.cn,direct
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+# 编译生产版本（静态链接，无依赖）
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o go-app ./main.go
+
+# 阶段 2：生产镜像（基于 alpine，体积仅几 MB）
+FROM alpine:3.19
+WORKDIR /app
+# 复制构建产物
+COPY --from=builder /app/go-app .
+# 暴露服务端口
+EXPOSE 8080
+# 启动服务
+CMD ["./go-app"]

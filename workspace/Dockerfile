@@ -33,8 +33,13 @@ USER root
 ARG CHANGE_SOURCE=false
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
     # Change application source from ubuntu.com to tuna.tsinghua.edu.cn source
-    sed -i "s@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
-    sed -i "s@http://.*security.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
+    if [ -e "/etc/apt/sources.list.d/ubuntu.sources" ]; then \
+      sed -i "s@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list.d/ubuntu.sources; \
+      sed -i "s@http://.*security.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list.d/ubuntu.sources; \
+    else \
+      sed -i "s@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
+      sed -i "s@http://.*security.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
+    fi \
   fi;
 
 ###########################################################################
@@ -1454,7 +1459,11 @@ RUN set -eux; \
   # Docker Client:
   ###########################################################################
   if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz; \
+    if [ ${CHANGE_SOURCE} = true ]; then \
+      curl -sS https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-29.1.3.tgz -o /tmp/docker.tar.gz ; \
+    else \
+      curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-29.1.3.tgz -o /tmp/docker.tar.gz ; \
+    fi ; \
     tar -xzf /tmp/docker.tar.gz -C /tmp/; \
     cp /tmp/docker/docker* /usr/local/bin; \
     chmod +x /usr/local/bin/docker*; \

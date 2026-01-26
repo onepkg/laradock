@@ -482,7 +482,7 @@ services:
         - frontend
         - backend
       extra_hosts:
-        - "host.docker.internal:host-gateway"  
+        - "host.docker.internal:host-gateway"
 
 ### OpenResty Server #########################################
     openresty:
@@ -2227,7 +2227,7 @@ services:
         - frontend
         - backend
       restart: always
-  
+
   ### keycloak ##################################################
     keycloak:
       image: bitnami/keycloak:${KEYCLOAK_VERSION}
@@ -2245,6 +2245,104 @@ services:
         - KEYCLOAK_DATABASE_PASSWORD=${KEYCLOAK_POSTGRES_PASSWORD}
       depends_on:
         - postgres
+      networks:
+        - frontend
+        - backend
+
+  ### Golang ##################################################
+    golang:
+      restart: always
+      build:
+        context: ./golang
+        args:
+          - LARADOCK_GOLANG_VERSION=1.24
+          - http_proxy
+          - https_proxy
+          - no_proxy
+      volumes:
+        - /path/to/project:/app
+        - ${DATA_PATH_HOST}/golang:/go/pkg/mod
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      ports:
+        - "9999:9999"
+        - "2345:2345"
+      networks:
+        - frontend
+        - backend
+      links:
+        - docker-in-docker
+
+  ### v2rayA ##################################################
+    # https://v2raya.org/docs/prologue/installation/docker/
+    v2raya:
+      image: mzz2017/v2raya
+      restart: always
+      privileged: true
+      network_mode: host
+      environment:
+        - TZ=Asia/Shanghai
+        - V2RAYA_LOG_FILE=/tmp/v2raya.log
+        - V2RAYA_V2RAY_BIN=/usr/local/bin/v2ray
+        - V2RAYA_NFTABLES_SUPPORT=off
+        - IPTABLES_MODE=legacy
+      volumes:
+        - /lib/modules:/lib/modules:ro
+        - /etc/resolv.conf:/etc/resolv.conf
+        - /etc/v2raya:/etc/v2raya
+
+  ### frankenphp ##################################################
+  # https://learnku.com/docs/laravel/12.x/octane/17012
+    frankenphp:
+      restart: always
+      build:
+        context: ./laravel-octane-frankenphp
+        args:
+          - CHANGE_SOURCE=${CHANGE_SOURCE}
+      # entrypoint: php artisan octane:frankenphp --workers=1 --max-requests=1
+      ports:
+       - "8000:8000"
+      volumes:
+        - /path/to/project:/app
+
+### PyTorch ##################################################
+    pytorch-raw:
+      restart: always
+      image: pytorch/pytorch:2.10.0-cuda13.0-cudnn9-runtime
+      stdin_open: true      # 相当于docker run -i
+      tty: true             # 相当于docker run -t
+      command: bash -c "tail -f /dev/null"  # 保持容器运行
+      volumes:
+        - ~/code/ml:/app
+      working_dir: /app
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                count: all  # 使用所有 GPU
+                capabilities: [gpu]  # 必需，指定 GPU 能力
+      networks:
+        - frontend
+        - backend
+
+### PyTorch ##################################################
+    pytorch:
+      restart: always
+      build:
+        context: ./pytorch
+      volumes:
+        - ~/code/ml:/app
+        - ${DATA_PATH_HOST}/vscode-server/pytorch:/root/.vscode-server
+      ports:
+       - "8888:8888"
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                count: all  # 使用所有 GPU
+                capabilities: [gpu]  # 必需，指定 GPU 能力
       networks:
         - frontend
         - backend

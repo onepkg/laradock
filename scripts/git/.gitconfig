@@ -1,0 +1,12 @@
+[user]
+        name = name-default
+        email = email-default
+[core]
+        quotepath = false
+[credential]
+        helper = store
+
+[includeIf "gitdir:~/path/to/private/*/"]
+        path = ~/.gitconfig-private
+[includeIf "gitdir:~/path/to/work/*/"]
+        path = ~/.gitconfig-work

@@ -1,0 +1,21 @@
+#! /bin/bash
+
+laradock_path=~/code/laradock
+
+laradock_cmd ()
+{
+        cd $laradock_path
+        docker compose $@
+}
+
+case $@ in
+    up)
+        laradock_cmd up -d mysql redis workspace php-fpm nginx
+        ;;
+    wp)
+        laradock_cmd exec workspace bash
+        ;;
+    *)
+        laradock_cmd $@
+
+esac
