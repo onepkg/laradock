@@ -2605,3 +2605,45 @@ services:
             - backend
           links:
             - docker-in-docker
+
+    redis-master:
+        image: 'bitnami/redis:latest'
+        environment:
+          - REDIS_REPLICATION_MODE=master
+          - REDIS_PASSWORD=secret_redis
+        ports:
+          - '56379:6379'
+        networks:
+          - backend
+
+    redis-slave:
+      image: 'bitnami/redis:latest'
+      environment:
+        - REDIS_REPLICATION_MODE=slave
+        - REDIS_MASTER_HOST=redis-master
+        - REDIS_MASTER_PASSWORD=secret_redis
+        - REDIS_PASSWORD=secret_redis
+      ports:
+        - '56378:6379'
+      depends_on:
+        - redis-master
+      networks:
+        - backend
+
+    redis-sentinel:
+      image: 'bitnami/redis-sentinel:latest'
+      environment:
+        - REDIS_MASTER_HOST=${DOCKER_HOST_IP}      # 哨兵监控的主节点服务名
+        - REDIS_MASTER_PORT_NUMBER=56379
+        - REDIS_MASTER_PASSWORD=secret_redis # 主节点密码
+        - REDIS_SENTINEL_QUORUM=2             # 判定客观下线的仲裁数
+        - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=5000
+      # ports:
+        # - '26379:26379'                       # 暴露哨兵端口
+      depends_on:
+        - redis-master
+        - redis-slave
+      networks:
+        - backend
+      # 如果需要部署多个哨兵，可以使用 --scale 参数
+      # docker-compose up --scale redis-sentinel=3 -d
