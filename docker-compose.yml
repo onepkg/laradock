@@ -3054,8 +3054,8 @@ services:
       links:
         - docker-in-docker
 
-### bagisto ##################################################
-    bagisto:
+### php-fpm-8.3 ##################################################
+    fpm83:
       restart: always
       build:
         context: ./php-fpm
