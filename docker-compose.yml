@@ -192,15 +192,15 @@ services:
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
         - docker-in-docker:/certs/client
         - ./php-worker/supervisord.d:/etc/supervisord.d
-        - ${DATA_PATH_HOST}/vscode-server/workspace:/root/.vscode-server
+        # - ${DATA_PATH_HOST}/vscode-server/workspace:/root/.vscode-server
       dns:
         - 8.8.8.8
         - 114.114.114.114
       extra_hosts:
         - "dockerhost:${DOCKER_HOST_IP}"
         - "sandgitlab.sand.ff:172.28.246.122"
-        - "cs-api.test:${DOCKER_HOST_IP}"
-        - "api.kargolink.loc:${DOCKER_HOST_IP}"
+        - "sass-uat01.sand.com.cn:172.28.246.122"
+        - "bsp-fat02.sand.com.cn:61.129.71.105"
       ports:
         - "${WORKSPACE_SSH_PORT}:22"
         - "${WORKSPACE_BROWSERSYNC_HOST_PORT}:3000"
