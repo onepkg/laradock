@@ -204,6 +204,7 @@ services:
           - https_proxy
           - no_proxy
       volumes:
+        - /var/run/docker.sock.raw:/var/run/docker.sock
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
         - docker-in-docker:/certs/client
         - ./php-worker/supervisord.d:/etc/supervisord.d
@@ -235,10 +236,10 @@ services:
       tty: true
       environment:
         - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
-        - DOCKER_HOST=tcp://docker-in-docker:2376
-        - DOCKER_TLS_VERIFY=1
-        - DOCKER_TLS_CERTDIR=/certs
-        - DOCKER_CERT_PATH=/certs/client
+        # - DOCKER_HOST=tcp://docker-in-docker:2376
+        # - DOCKER_TLS_VERIFY=1
+        # - DOCKER_TLS_CERTDIR=/certs
+        # - DOCKER_CERT_PATH=/certs/client
         - CHOKIDAR_USEPOLLING=true
         - NODE_OPTIONS=--openssl-legacy-provider
       networks:
