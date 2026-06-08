@@ -793,9 +793,13 @@ ARG NVM_NODEJS_ORG_MIRROR
 ENV NVM_NODEJS_ORG_MIRROR ${NVM_NODEJS_ORG_MIRROR}
 
 RUN if [ ${INSTALL_NODE} = true ]; then \
+    NVM_INSTALL_SH="https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh" && \
+    if [ ${CHANGE_SOURCE} = true ]; then \
+      NVM_INSTALL_SH="https://gh-proxy.org/https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh" \
+    ;fi && \
     # Install nvm (A Node Version Manager)
     mkdir -p $NVM_DIR && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
+    curl -o- $NVM_INSTALL_SH | bash \
         && . $NVM_DIR/nvm.sh \
         && nvm install ${NODE_VERSION} \
         && nvm use ${NODE_VERSION} \
@@ -1917,6 +1921,46 @@ RUN if [ ${INSTALL_GITHUB_CLI} = true ]; then \
     && apt install gh -y \
 ;fi
 
+###########################################################################
+# Golang:
+###########################################################################
+ARG GO_VERSION=1.26.1
+# 国内用户必配：Go 代理（加速依赖下载）
+ENV GOPROXY=https://goproxy.cn,direct \
+    GOSUMDB=sum.golang.org \
+    GOPATH=/go \
+    GOROOT=/usr/local/go \
+    PATH=$PATH:/go/bin:/usr/local/go/bin
+RUN curl -L -o go.tgz "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
+    && tar -C /usr/local -xzf go.tgz \
+    && rm go.tgz \
+    && mkdir -p $GOPATH/{src,pkg,bin}
+# 安装开发依赖工具：air（热重载）、delve（调试）、git（拉取依赖）、gcc（编译C依赖）
+RUN echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc \
+    && go install github.com/air-verse/air@v1.62.0 \
+    && go install github.com/go-delve/delve/cmd/dlv@latest
+
+###########################################################################
+# Docker Compose:
+###########################################################################
+RUN mkdir -p /usr/local/lib/docker/cli-plugins
+RUN if [ ${CHANGE_SOURCE} = true ]; then \
+      curl -SL "https://gh-proxy.org/https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    else \
+      curl -SL "https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    ;fi
+RUN chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+###########################################################################
+# Claude Code:
+###########################################################################
+RUN npm install -g @anthropic-ai/claude-code
+RUN echo "" >> ~/.bashrc && \
+    echo "# Claude Config" >> ~/.bashrc && \
+    echo "if [ -f ~/.claude.conf ]; then" >> ~/.bashrc && \
+    echo "    . ~/.claude.conf" >> ~/.bashrc && \
+    echo "fi" >> ~/.bashrc && \
+    echo "" >> ~/.bashrc
 
 #
 #--------------------------------------------------------------------------
