@@ -1,7 +1,16 @@
 ---
 sidebar_position: 2
 title: Getting Started
+description: Install Laradock and get a full Dockerized PHP stack running in minutes. Step-by-step setup for new and existing projects, single or multiple apps, on Linux, macOS, and Windows.
+keywords:
+  - laradock installation
+  - laradock setup
+  - install laradock
+  - docker php setup
+  - laravel docker install
 ---
+
+This guide walks you through setting up Laradock for your project, from the prerequisites to a fully running environment. Whether you are starting a brand-new app or adding Docker to an existing one, the steps below have you covered. Pick the installation path that matches your setup and you will have a complete local stack running in minutes.
 
 ## Requirements
 
@@ -49,7 +58,7 @@ Note: If you are not using Git yet for your project, you can use `git clone` ins
 *   laradock-b
 ```
 
-*(It's important to rename the laradock folders to unique name in each project, if you want to run laradock per project).*
+*(If you want to run Laradock per project, rename the `laradock` folder to a unique name in each project.)*
 
 3 - Go to the [Usage](#Usage) section.
 
