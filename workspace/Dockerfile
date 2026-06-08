@@ -66,8 +66,8 @@ RUN set -xe; \
     apt-get update -yqq ${APT_GET_UPDATE_OPTIONS} && \
     pecl channel-update pecl.php.net && \
     if [ $(php -r "echo PHP_MAJOR_VERSION;") = "8" ] && [ $(php -r "echo PHP_MINOR_VERSION;") != "0" ]; then \
-      groupmod --new-name laradock ubuntu; \
-      usermod --login laradock ubuntu --move-home --home /home/laradock; \
+      groupmod --new-name laradock -g ${PGID} ubuntu; \
+      usermod --login laradock -u ${PUID} --move-home --home /home/laradock ubuntu; \
     else \
       groupadd -g ${PGID} laradock; \
       useradd -l -u ${PUID} -g laradock -m laradock -G docker_env; \
@@ -793,9 +793,13 @@ ARG NVM_NODEJS_ORG_MIRROR
 ENV NVM_NODEJS_ORG_MIRROR ${NVM_NODEJS_ORG_MIRROR}
 
 RUN if [ ${INSTALL_NODE} = true ]; then \
+    NVM_INSTALL_SH="https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh" && \
+    if [ ${CHANGE_SOURCE} = true ]; then \
+      NVM_INSTALL_SH="https://gh-proxy.org/https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh" \
+    ;fi && \
     # Install nvm (A Node Version Manager)
     mkdir -p $NVM_DIR && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
+    curl -o- $NVM_INSTALL_SH | bash \
         && . $NVM_DIR/nvm.sh \
         && nvm install ${NODE_VERSION} \
         && nvm use ${NODE_VERSION} \
@@ -1935,6 +1939,28 @@ RUN curl -L -o go.tgz "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.
 RUN echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc \
     && go install github.com/air-verse/air@v1.62.0 \
     && go install github.com/go-delve/delve/cmd/dlv@latest
+
+###########################################################################
+# Docker Compose:
+###########################################################################
+RUN mkdir -p /usr/local/lib/docker/cli-plugins
+RUN if [ ${CHANGE_SOURCE} = true ]; then \
+      curl -SL "https://gh-proxy.org/https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    else \
+      curl -SL "https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    ;fi
+RUN chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+###########################################################################
+# Claude Code:
+###########################################################################
+RUN npm install -g @anthropic-ai/claude-code
+RUN echo "" >> ~/.bashrc && \
+    echo "# Claude Config" >> ~/.bashrc && \
+    echo "if [ -f ~/.claude.conf ]; then" >> ~/.bashrc && \
+    echo "    . ~/.claude.conf" >> ~/.bashrc && \
+    echo "fi" >> ~/.bashrc && \
+    echo "" >> ~/.bashrc
 
 #
 #--------------------------------------------------------------------------
