@@ -78,6 +78,7 @@ services:
       build:
         context: ./workspace
         args:
+          - GITHUB_PROXY=${GITHUB_PROXY}
           - CHANGE_SOURCE=${CHANGE_SOURCE}
           - SHELL_OH_MY_ZSH=${SHELL_OH_MY_ZSH}
           - SHELL_OH_MY_ZSH_AUTOSUGESTIONS=${SHELL_OH_MY_ZSH_AUTOSUGESTIONS}

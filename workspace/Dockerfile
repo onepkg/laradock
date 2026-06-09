@@ -19,6 +19,7 @@ FROM laradock/workspace:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 ARG LARADOCK_PHP_VERSION
+ARG GITHUB_PROXY
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -793,13 +794,11 @@ ARG NVM_NODEJS_ORG_MIRROR
 ENV NVM_NODEJS_ORG_MIRROR ${NVM_NODEJS_ORG_MIRROR}
 
 RUN if [ ${INSTALL_NODE} = true ]; then \
-    NVM_INSTALL_SH="https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh" && \
-    if [ ${CHANGE_SOURCE} = true ]; then \
-      NVM_INSTALL_SH="https://gh-proxy.org/https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh" \
-    ;fi && \
     # Install nvm (A Node Version Manager)
     mkdir -p $NVM_DIR && \
-    curl -o- $NVM_INSTALL_SH | bash \
+    curl -o- ${GITHUB_PROXY}https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
+        | sed 's|https://raw.githubusercontent.com/|${GITHUB_PROXY}https://raw.githubusercontent.com/|g; s|https://github.com/|${GITHUB_PROXY}https://github.com/|g' \
+        | bash \
         && . $NVM_DIR/nvm.sh \
         && nvm install ${NODE_VERSION} \
         && nvm use ${NODE_VERSION} \
@@ -1944,11 +1943,7 @@ RUN echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc \
 # Docker Compose:
 ###########################################################################
 RUN mkdir -p /usr/local/lib/docker/cli-plugins
-RUN if [ ${CHANGE_SOURCE} = true ]; then \
-      curl -SL "https://gh-proxy.org/https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
-    else \
-      curl -SL "https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
-    ;fi
+RUN curl -SL "${GITHUB_PROXY}https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 RUN chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 ###########################################################################
@@ -1956,9 +1951,9 @@ RUN chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 ###########################################################################
 RUN npm install -g @anthropic-ai/claude-code
 RUN echo "" >> ~/.bashrc && \
-    echo "# Claude Config" >> ~/.bashrc && \
-    echo "if [ -f ~/.claude.conf ]; then" >> ~/.bashrc && \
-    echo "    . ~/.claude.conf" >> ~/.bashrc && \
+    echo "# Claude Env" >> ~/.bashrc && \
+    echo "if [ -f ~/.env.claude ]; then" >> ~/.bashrc && \
+    echo "    . ~/.env.claude" >> ~/.bashrc && \
     echo "fi" >> ~/.bashrc && \
     echo "" >> ~/.bashrc
 
