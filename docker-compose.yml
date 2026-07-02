@@ -69,6 +69,14 @@ volumes:
     driver: ${VOLUMES_DRIVER}
   my-workspace:
     driver: ${VOLUMES_DRIVER}
+  home-ssh:
+    driver: ${VOLUMES_DRIVER}
+  home-gitconfig:
+    driver: ${VOLUMES_DRIVER}
+  home-lingma:
+    driver: ${VOLUMES_DRIVER}
+  home-claude:
+    driver: ${VOLUMES_DRIVER}
 
 services:
 
@@ -220,6 +228,10 @@ services:
         - code-jzglo:${APP_CODE_PATH_CONTAINER}/volumes/jzglo${APP_CODE_CONTAINER_FLAG}
         - code-b2b:${APP_CODE_PATH_CONTAINER}/volumes/b2b${APP_CODE_CONTAINER_FLAG}
         - my-workspace:${APP_CODE_PATH_CONTAINER}/workspace${APP_CODE_CONTAINER_FLAG}
+        - home-ssh:/root/.ssh
+        - home-gitconfig:/root/.gitconfigdir
+        - home-lingma:/root/.lingma
+        - home-claude:/root/.claude
       dns:
         - 8.8.8.8
         - 114.114.114.114
@@ -246,6 +258,14 @@ services:
         # - DOCKER_CERT_PATH=/certs/client
         - CHOKIDAR_USEPOLLING=true
         - NODE_OPTIONS=--openssl-legacy-provider
+        - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+        - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+        - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+        - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
+        - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
+        - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
+        - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
+        - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
       networks:
         - frontend
         - backend
