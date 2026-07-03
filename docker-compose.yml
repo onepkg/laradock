@@ -2741,3 +2741,36 @@ services:
         - "30680:3306"
       networks:
         - backend
+
+### holyclaude(All-in-One Docker) ################################################
+    holyclaude:
+      image: coderluii/holyclaude:latest
+      restart: unless-stopped
+      shm_size: 2g
+      cap_add:
+        - SYS_ADMIN
+        - SYS_PTRACE
+      security_opt:
+        - seccomp=unconfined
+      ports:
+        - "127.0.0.1:3011:3001"
+      volumes:
+        - home-claude:/home/claude/.claude
+        - code-github:${APP_CODE_PATH_CONTAINER}/volumes/github${APP_CODE_CONTAINER_FLAG}
+        - code-coniestore:${APP_CODE_PATH_CONTAINER}/volumes/coniestore${APP_CODE_CONTAINER_FLAG}
+        - code-kargolink:${APP_CODE_PATH_CONTAINER}/volumes/kargolink${APP_CODE_CONTAINER_FLAG}
+        - code-jzglo:${APP_CODE_PATH_CONTAINER}/volumes/jzglo${APP_CODE_CONTAINER_FLAG}
+        - code-b2b:${APP_CODE_PATH_CONTAINER}/volumes/b2b${APP_CODE_CONTAINER_FLAG}
+        - my-workspace:${APP_CODE_PATH_CONTAINER}/workspace${APP_CODE_CONTAINER_FLAG}
+      environment:
+        - TZ=${WORKSPACE_TIMEZONE}
+        - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+        - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+        - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+        - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
+        - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
+        - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
+        - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
+        - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
+      networks:
+        - backend
