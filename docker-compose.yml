@@ -77,6 +77,8 @@ volumes:
     driver: ${VOLUMES_DRIVER}
   home-claude:
     driver: ${VOLUMES_DRIVER}
+  headroom-data:
+    driver: ${VOLUMES_DRIVER}
 
 services:
 
@@ -2775,5 +2777,22 @@ services:
         - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
         - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
         - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
+      networks:
+        - backend
+
+### headroom ################################################
+    headroom:
+      image: ghcr.io/chopratejas/headroom:latest
+      restart: unless-stopped
+      ports:
+        - "8787:8787"
+      environment:
+        - TZ=${WORKSPACE_TIMEZONE}
+        - ANTHROPIC_TARGET_API_URL=${ANTHROPIC_TARGET_API_URL}
+        - HEADROOM_TELEMETRY=off
+        - HEADROOM_PORT=8787
+        - HEADROOM_HOST=0.0.0.0
+      volumes:
+        - headroom-data:/home/nonroot/.headroom
       networks:
         - backend
