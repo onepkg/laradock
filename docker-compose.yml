@@ -2796,3 +2796,9 @@ services:
         - headroom-data:/home/nonroot/.headroom
       networks:
         - backend
+
+# code review 省token
+# https://github.com/tirth8205/code-review-graph
+
+# 大模型输出省token
+# https://github.com/JuliusBrussee/caveman
