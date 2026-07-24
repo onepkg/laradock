@@ -3,6 +3,7 @@
         email = email-default
 [core]
         quotepath = false
+        hooksPath = ~/.git-hooks
 [credential]
         helper = store
 
