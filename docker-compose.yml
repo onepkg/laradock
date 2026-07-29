@@ -254,7 +254,9 @@ include:
     env_file: pgvector/defaults.env
   - path: php-fpm/compose.yml
     project_directory: .
-    env_file: php-fpm/defaults.env
+    env_file:
+      - php-fpm/defaults.env
+      - php-fpm/my.env
   - path: php-worker/compose.yml
     project_directory: .
     env_file: php-worker/defaults.env
