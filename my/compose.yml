@@ -1,0 +1,167 @@
+services:
+
+### PyTorch ##################################################
+    pytorch-raw:
+      restart: always
+      image: pytorch/pytorch:2.10.0-cuda13.0-cudnn9-runtime
+      stdin_open: true      # 相当于docker run -i
+      tty: true             # 相当于docker run -t
+      command: bash -c "tail -f /dev/null"  # 保持容器运行
+      volumes:
+        - ~/code/ml:/app
+      working_dir: /app
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                count: all  # 使用所有 GPU
+                capabilities: [gpu]  # 必需，指定 GPU 能力
+      networks:
+        - frontend
+        - backend
+
+### PyTorch ##################################################
+    pytorch:
+      restart: always
+      build:
+        context: ./pytorch
+      volumes:
+        - ~/code/ml:/app
+        - ${DATA_PATH_HOST}/vscode-server/pytorch:/root/.vscode-server
+      ports:
+       - "8888:8888"
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                count: all  # 使用所有 GPU
+                capabilities: [gpu]  # 必需，指定 GPU 能力
+      networks:
+        - frontend
+        - backend
+
+### fpm83 ##################################################
+    fpm83:
+      extends:
+        file: ../php-fpm/compose.yml
+        service: php-fpm
+      build:
+        context: ../php-fpm
+        args:
+          - LARADOCK_PHP_VERSION=8.3
+
+### fpm73 ##################################################
+    fpm73:
+      extends:
+        file: ../php-fpm/compose.yml
+        service: php-fpm
+      build:
+        context: ../php-fpm
+        args:
+          - LARADOCK_PHP_VERSION=7.3
+
+### v2rayA ##################################################
+    # https://v2raya.org/docs/prologue/installation/docker/
+    v2raya:
+      image: mzz2017/v2raya
+      restart: always
+      # privileged: true
+      # network_mode: host
+      environment:
+        - TZ=Asia/Shanghai
+        - V2RAYA_LOG_FILE=/tmp/v2raya.log
+        - V2RAYA_V2RAY_BIN=/usr/local/bin/v2ray
+        # - V2RAYA_NFTABLES_SUPPORT=off
+        # - IPTABLES_MODE=legacy
+      # volumes:
+        # - /lib/modules:/lib/modules:ro
+        # - /etc/resolv.conf:/etc/resolv.conf
+        # - /etc/v2raya:/etc/v2raya
+      ports:
+        - "2017:2017"
+        - "20170-20172:20170-20172"
+      dns:
+        - 8.8.8.8
+        - 114.114.114.114
+      networks:
+        - frontend
+        - backend
+
+### redis-master-slave-sentinel ##################################################
+  ### master ##################################################
+    redis-master:
+        image: 'bitnami/redis:latest'
+        environment:
+          - REDIS_REPLICATION_MODE=master
+          - REDIS_PASSWORD=secret_redis
+        ports:
+          - '56379:6379'
+        networks:
+          - backend
+  ### slave ##################################################
+    redis-slave:
+      image: 'bitnami/redis:latest'
+      environment:
+        - REDIS_REPLICATION_MODE=slave
+        - REDIS_MASTER_HOST=redis-master
+        - REDIS_MASTER_PASSWORD=secret_redis
+        - REDIS_PASSWORD=secret_redis
+      ports:
+        - '56378:6379'
+      depends_on:
+        - redis-master
+      networks:
+        - backend
+  ### slave ##################################################
+    redis-sentinel:
+      image: 'bitnami/redis-sentinel:latest'
+      environment:
+        - REDIS_MASTER_HOST=${DOCKER_HOST_IP}      # 哨兵监控的主节点服务名
+        - REDIS_MASTER_PORT_NUMBER=56379
+        - REDIS_MASTER_PASSWORD=secret_redis # 主节点密码
+        - REDIS_SENTINEL_QUORUM=2             # 判定客观下线的仲裁数
+        - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=5000
+      # ports:
+        # - '26379:26379'                       # 暴露哨兵端口
+      depends_on:
+        - redis-master
+        - redis-slave
+      networks:
+        - backend
+      # 如果需要部署多个哨兵，可以使用 --scale 参数
+      # docker-compose up --scale redis-sentinel=3 -d
+
+### headroom ################################################
+    headroom:
+      image: ghcr.io/chopratejas/headroom:latest
+      restart: unless-stopped
+      ports:
+        - "8787:8787"
+      environment:
+        - TZ=${WORKSPACE_TIMEZONE}
+        - ANTHROPIC_TARGET_API_URL=${ANTHROPIC_TARGET_API_URL}
+        - HEADROOM_TELEMETRY=off
+        - HEADROOM_PORT=8787
+        - HEADROOM_HOST=0.0.0.0
+      volumes:
+        - headroom-data:/home/nonroot/.headroom
+      networks:
+        - backend
+
+### dbx ################################################
+    dbx:
+      # image: t8y2/dbx:latest
+      # 中国大陆用户可改用 CNB 镜像，以加快拉取速度：
+      image: docker.cnb.cool/dbxio.com/dbx:latest
+      pull_policy: always
+      environment:
+        - DBX_DISABLE_PASSWORD=1
+      ports:
+        - "4224:4224"
+      volumes:
+        - dbx-data:/app/data
+      restart: unless-stopped
+      networks:
+        - backend
