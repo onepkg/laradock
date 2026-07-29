@@ -1903,7 +1903,7 @@ ARG INSTALL_EVENT=false
 
 RUN set -eux; \
   if [ ${INSTALL_EVENT} = true ]; then \
-      curl -L -o  /tmp/libevent.tar.gz https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz   &&\
+      curl -L -o  /tmp/libevent.tar.gz ${GITHUB_PROXY}https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz   &&\
       mkdir -p /tmp/libevent-php &&\
       tar -C /tmp/libevent-php -zxvf /tmp/libevent.tar.gz --strip 1 &&\
       cd /tmp/libevent-php &&\
