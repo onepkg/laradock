@@ -39,6 +39,23 @@ volumes:
   weaviate:
     driver: ${VOLUMES_DRIVER}
 
+  mysql57:
+    driver: ${VOLUMES_DRIVER}
+  mysql80:
+    driver: ${VOLUMES_DRIVER}
+  vscode-server:
+    driver: ${VOLUMES_DRIVER}
+  code-data:
+    driver: ${VOLUMES_DRIVER}
+  code-coniestore:
+    driver: ${VOLUMES_DRIVER}
+  root-data:
+    driver: ${VOLUMES_DRIVER}
+  headroom-data:
+    driver: ${VOLUMES_DRIVER}
+  dbx-data:
+    driver: ${VOLUMES_DRIVER}
+
 include:
   - path: adminer/compose.yml
     project_directory: .
@@ -360,3 +377,7 @@ include:
   - path: zookeeper/compose.yml
     project_directory: .
     env_file: zookeeper/defaults.env
+
+  - path: mysql/compose.multi.yml
+    env_file:
+      - mysql/defaults.env
