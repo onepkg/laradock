@@ -165,3 +165,45 @@ services:
       restart: unless-stopped
       networks:
         - backend
+
+### mysql57 ################################################
+    mysql57:
+      restart: always
+      build:
+        context: ./mysql
+        args:
+          - MYSQL_VERSION=5.7
+      environment:
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - TZ=${WORKSPACE_TIMEZONE}
+      volumes:
+        - mysql57:/var/lib/mysql
+        - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+      ports:
+        - "30657:3306"
+      networks:
+        - backend
+
+### mysql80 ################################################
+    mysql80:
+      restart: always
+      build:
+        context: ./mysql
+        args:
+          - MYSQL_VERSION=8.0
+      environment:
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - TZ=${WORKSPACE_TIMEZONE}
+      volumes:
+        - mysql80:/var/lib/mysql
+        - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+      ports:
+        - "30680:3306"
+      networks:
+        - backend

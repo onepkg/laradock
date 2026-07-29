@@ -378,6 +378,8 @@ include:
     project_directory: .
     env_file: zookeeper/defaults.env
 
-  - path: mysql/compose.multi.yml
+  - path: my/compose.yml
     env_file:
       - mysql/defaults.env
+      - php-fpm/defaults.env
+      - workspace/defaults.env
