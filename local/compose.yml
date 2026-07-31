@@ -14,6 +14,8 @@ x-volumes-config: &volumes-config
     - projects-data:${APP_CODE_PATH_CONTAINER}/projects
 x-workspace-volumes-config: &workspace-volumes-config
   volumes:
+    - code-coniestore:${APP_CODE_PATH_CONTAINER}/volumes/coniestore
+    - projects-data:${APP_CODE_PATH_CONTAINER}/projects
     - /var/run/docker.sock.raw:/var/run/docker.sock
     - mysql:/root/.laradock/mysql
     - mysql57:/root/.laradock/mysql57
@@ -109,7 +111,7 @@ services:
         context: ../workspace
         args:
           - GITHUB_PROXY=${GITHUB_PROXY}
-      <<: [*dns-config, *extra-hosts-config, *volumes-config, *workspace-volumes-config]
+      <<: [*dns-config, *extra-hosts-config, *workspace-volumes-config]
       environment:
         # docker
         - DOCKER_HOST=
