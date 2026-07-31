@@ -1995,10 +1995,10 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
 ###########################################################################
 # Claude Code:
 ###########################################################################
-RUN npm install -g @anthropic-ai/claude-code \
-    && curl -fsSL https://bun.sh/install \
+RUN curl -fsSL https://bun.sh/install \
         | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
-        | bash
+        | bash \
+    && npm install -g @anthropic-ai/claude-code
 
 ###########################################################################
 # pipx:
