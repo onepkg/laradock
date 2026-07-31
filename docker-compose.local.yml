@@ -1,5 +1,6 @@
 include:
   - path: local/compose.yml
+    project_directory: .
     env_file:
       - workspace/defaults.env
       - nginx/defaults.env

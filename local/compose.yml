@@ -105,10 +105,10 @@ services:
 ### workspace ##################################################
     workspace:
       extends:
-        file: ../workspace/compose.yml
+        file: ./workspace/compose.yml
         service: workspace
       build:
-        context: ../workspace
+        context: ./workspace
         args:
           - GITHUB_PROXY=${GITHUB_PROXY}
       <<: [*dns-config, *extra-hosts-config, *workspace-volumes-config]
@@ -135,19 +135,19 @@ services:
 ### nginx ##################################################
     nginx:
       extends:
-        file: ../nginx/compose.yml
+        file: ./nginx/compose.yml
         service: nginx
       build:
-        context: ../nginx
+        context: ./nginx
       <<: [*dns-config, *extra-hosts-config, *volumes-config]
 
 ### fpm83 ##################################################
     fpm83:
       extends:
-        file: ../php-fpm/compose.yml
+        file: ./php-fpm/compose.yml
         service: php-fpm
       build:
-        context: ../php-fpm
+        context: ./php-fpm
         args:
           - LARADOCK_PHP_VERSION=8.3
       <<: [*dns-config, *extra-hosts-config, *volumes-config]
@@ -155,10 +155,10 @@ services:
 ### fpm73 ##################################################
     fpm73:
       extends:
-        file: ../php-fpm/compose.yml
+        file: ./php-fpm/compose.yml
         service: php-fpm
       build:
-        context: ../php-fpm
+        context: ./php-fpm
         args:
           - LARADOCK_PHP_VERSION=7.3
       <<: [*dns-config, *extra-hosts-config, *volumes-config]
