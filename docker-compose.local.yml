@@ -1,0 +1,6 @@
+include:
+  - path: local/compose.yml
+    env_file:
+      - workspace/defaults.env
+      - php-fpm/defaults.env
+      - mysql/defaults.env

@@ -1980,23 +1980,25 @@ ENV GOPROXY=https://goproxy.cn,direct \
 RUN curl -L -o go.tgz "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
     && tar -C /usr/local -xzf go.tgz \
     && rm go.tgz \
-    && mkdir -p $GOPATH/{src,pkg,bin}
-# 安装开发依赖工具：air（热重载）、delve（调试）、git（拉取依赖）、gcc（编译C依赖）
-RUN echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc \
+    && mkdir -p $GOPATH/{src,pkg,bin} \
+    && echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc \
     && go install github.com/air-verse/air@v1.62.0 \
     && go install github.com/go-delve/delve/cmd/dlv@latest
 
 ###########################################################################
 # Docker Compose:
 ###########################################################################
-RUN mkdir -p /usr/local/lib/docker/cli-plugins
-RUN curl -SL "${GITHUB_PROXY}https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
-RUN chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+RUN mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -SL "${GITHUB_PROXY}https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 ###########################################################################
 # Claude Code:
 ###########################################################################
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code \
+    && curl -fsSL https://bun.sh/install \
+        | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
+        | bash
 
 ###########################################################################
 # pipx:
@@ -2004,12 +2006,8 @@ RUN npm install -g @anthropic-ai/claude-code
 USER root
 RUN apt-get -yqq install pipx \
     && pipx ensurepath \
-    && pipx --version
-
-###########################################################################
-# code-review-graph:
-###########################################################################
-RUN pipx install code-review-graph
+    && pipx --version \
+    && pipx install code-review-graph
 
 #
 #--------------------------------------------------------------------------

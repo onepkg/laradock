@@ -1,3 +1,56 @@
+x-dns-config: &dns-config
+  dns:
+    - 8.8.8.8
+    - 114.114.114.114
+x-extra-hosts-config: &extra-hosts-config
+  extra_hosts:
+    - "sandgitlab.sand.ff:172.28.246.122"
+    - "sass-uat01.sand.com.cn:172.28.246.122"
+    - "bsp-fat02.sand.com.cn:61.129.71.105"
+    - "coniestore.test:${DOCKER_HOST_IP}"
+x-volumes-config: &volumes-config
+  volumes:
+    - /var/run/docker.sock.raw:/var/run/docker.sock
+    - mysql:/root/.laradock/mysql
+    - mysql57:/root/.laradock/mysql57
+    - mysql80:/root/.laradock/mysql80
+    - vscode-server:/root/.vscode-server
+    - home-ssh:/root/.ssh
+    - home-gitconfig:/root/.gitconfigdir
+    - home-lingma:/root/.lingma
+    - home-trae:/root/.marscode
+    - home-claude:/root/.claude
+    - code-coniestore:${APP_CODE_PATH_CONTAINER}/volumes/coniestore
+    - projects-data:${APP_CODE_PATH_CONTAINER}/projects
+
+volumes:
+  mysql:
+    driver: ${VOLUMES_DRIVER}
+  mysql57:
+    driver: ${VOLUMES_DRIVER}
+  mysql80:
+    driver: ${VOLUMES_DRIVER}
+  vscode-server:
+    driver: ${VOLUMES_DRIVER}
+  projects-data:
+    driver: ${VOLUMES_DRIVER}
+  code-coniestore:
+    driver: ${VOLUMES_DRIVER}
+  home-ssh:
+    driver: ${VOLUMES_DRIVER}
+  home-gitconfig:
+    driver: ${VOLUMES_DRIVER}
+  home-lingma:
+    driver: ${VOLUMES_DRIVER}
+  home-trae:
+    driver: ${VOLUMES_DRIVER}
+  home-claude:
+    driver: ${VOLUMES_DRIVER}
+  headroom-data:
+    driver: ${VOLUMES_DRIVER}
+  dbx-data:
+    driver: ${VOLUMES_DRIVER}
+
 services:
 
 ### PyTorch ##################################################
@@ -42,6 +95,36 @@ services:
         - frontend
         - backend
 
+### workspace ##################################################
+    workspace:
+      extends:
+        file: ../workspace/compose.yml
+        service: workspace
+      build:
+        context: ../workspace
+        args:
+          - GITHUB_PROXY=${GITHUB_PROXY}
+      <<: [*dns-config, *extra-hosts-config, *volumes-config]
+      environment:
+        # docker
+        - DOCKER_HOST=
+        - DOCKER_TLS_VERIFY=
+        - DOCKER_TLS_CERTDIR=
+        - DOCKER_CERT_PATH=
+        # node ssl
+        - NODE_OPTIONS=--openssl-legacy-provider
+        # claude code
+        - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+        - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+        - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+        - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
+        - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
+        - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
+        - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
+        - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
+        - ENABLE_LSP_TOOL=1
+        - ENABLE_TOOL_SEARCH=true
+
 ### fpm83 ##################################################
     fpm83:
       extends:
@@ -51,6 +134,7 @@ services:
         context: ../php-fpm
         args:
           - LARADOCK_PHP_VERSION=8.3
+      <<: [*dns-config, *extra-hosts-config, *volumes-config]
 
 ### fpm73 ##################################################
     fpm73:
@@ -61,6 +145,8 @@ services:
         context: ../php-fpm
         args:
           - LARADOCK_PHP_VERSION=7.3
+      volumes:
+        - projects-data:${APP_CODE_PATH_CONTAINER}/projects
 
 ### v2rayA ##################################################
     # https://v2raya.org/docs/prologue/installation/docker/

@@ -1,5 +1,0 @@
-include:
-  - path: my/compose.yml
-    env_file:
-      - php-fpm/defaults.env
-      - workspace/defaults.env
