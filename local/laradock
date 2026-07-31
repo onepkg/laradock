@@ -5,7 +5,7 @@ laradock_path=/var/www/laradock
 laradock_cmd ()
 {
         cd $laradock_path
-        docker compose $@
+        docker compose -f docker-compose.yml -f docker-compose.local.yml $@
 }
 
 case $@ in
