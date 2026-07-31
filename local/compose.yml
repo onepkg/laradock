@@ -10,6 +10,10 @@ x-extra-hosts-config: &extra-hosts-config
     - "coniestore.test:${DOCKER_HOST_IP}"
 x-volumes-config: &volumes-config
   volumes:
+    - code-coniestore:${APP_CODE_PATH_CONTAINER}/volumes/coniestore
+    - projects-data:${APP_CODE_PATH_CONTAINER}/projects
+x-workspace-volumes-config: &workspace-volumes-config
+  volumes:
     - /var/run/docker.sock.raw:/var/run/docker.sock
     - mysql:/root/.laradock/mysql
     - mysql57:/root/.laradock/mysql57
@@ -21,8 +25,6 @@ x-volumes-config: &volumes-config
     - home-trae:/root/.marscode
     - home-claude:/root/.claude
     - claude-mem-data:/root/.claude-mem
-    - code-coniestore:${APP_CODE_PATH_CONTAINER}/volumes/coniestore
-    - projects-data:${APP_CODE_PATH_CONTAINER}/projects
 
 volumes:
   mysql:
@@ -107,7 +109,7 @@ services:
         context: ../workspace
         args:
           - GITHUB_PROXY=${GITHUB_PROXY}
-      <<: [*dns-config, *extra-hosts-config, *volumes-config]
+      <<: [*dns-config, *extra-hosts-config, *volumes-config, *workspace-volumes-config]
       environment:
         # docker
         - DOCKER_HOST=
@@ -127,6 +129,15 @@ services:
         - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
         - ENABLE_LSP_TOOL=1
         - ENABLE_TOOL_SEARCH=true
+
+### nginx ##################################################
+    nginx:
+      extends:
+        file: ../nginx/compose.yml
+        service: nginx
+      build:
+        context: ../nginx
+      <<: [*dns-config, *extra-hosts-config, *volumes-config]
 
 ### fpm83 ##################################################
     fpm83:
@@ -148,8 +159,7 @@ services:
         context: ../php-fpm
         args:
           - LARADOCK_PHP_VERSION=7.3
-      volumes:
-        - projects-data:${APP_CODE_PATH_CONTAINER}/projects
+      <<: [*dns-config, *extra-hosts-config, *volumes-config]
 
 ### v2rayA ##################################################
     # https://v2raya.org/docs/prologue/installation/docker/
