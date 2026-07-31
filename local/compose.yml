@@ -20,6 +20,7 @@ x-volumes-config: &volumes-config
     - home-lingma:/root/.lingma
     - home-trae:/root/.marscode
     - home-claude:/root/.claude
+    - claude-mem-data:/root/.claude-mem
     - code-coniestore:${APP_CODE_PATH_CONTAINER}/volumes/coniestore
     - projects-data:${APP_CODE_PATH_CONTAINER}/projects
 
@@ -49,6 +50,8 @@ volumes:
   headroom-data:
     driver: ${VOLUMES_DRIVER}
   dbx-data:
+    driver: ${VOLUMES_DRIVER}
+  claude-mem-data:
     driver: ${VOLUMES_DRIVER}
 
 services:
