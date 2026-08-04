@@ -1,0 +1,20 @@
+[user]
+        name = default
+        email = default
+[core]
+        quotepath = false
+        hooksPath = ~/gitconfigdir/.git-hooks
+[safe]
+        directory = *
+
+[includeIf "gitdir:/var/www/*/"]
+        path = ~/gitconfigdir/.gitconfig.work
+
+[includeIf "gitdir:/var/www/projects/github/*/"]
+        path = ~/.gitconfigdir/.gitconfig.github
+
+[includeIf "gitdir:/var/www/laradock/"]
+        path = ~/.gitconfigdir/.gitconfig.github
+
+[init]
+        defaultBranch = main
