@@ -1999,7 +1999,9 @@ USER root
 RUN apt-get -yqq install pipx \
     && pipx ensurepath \
     && pipx --version \
-    && pipx install code-review-graph
+    && pipx install code-review-graph \
+    && pipx install claude-tap \
+    && pipx ensurepath
 
 ###########################################################################
 # Claude Code:
