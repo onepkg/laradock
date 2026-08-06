@@ -1993,14 +1993,6 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 ###########################################################################
-# Claude Code:
-###########################################################################
-RUN curl -fsSL https://bun.sh/install \
-        | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
-        | bash \
-    && npm install -g @anthropic-ai/claude-code
-
-###########################################################################
 # pipx:
 ###########################################################################
 USER root
@@ -2008,6 +2000,16 @@ RUN apt-get -yqq install pipx \
     && pipx ensurepath \
     && pipx --version \
     && pipx install code-review-graph
+
+###########################################################################
+# Claude Code:
+###########################################################################
+RUN curl -fsSL https://bun.sh/install \
+        | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
+        | bash \
+    && npm install -g @anthropic-ai/claude-code \
+    # php-lsp
+    && npm install -g intelephense
 
 #
 #--------------------------------------------------------------------------
