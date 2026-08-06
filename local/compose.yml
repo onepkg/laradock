@@ -245,7 +245,7 @@ services:
         - HEADROOM_PORT=8787
         - HEADROOM_HOST=0.0.0.0
       volumes:
-        - headroom-data:/home/nonroot/.headroom
+        - headroom-data:/root/.headroom
       networks:
         - backend
 
