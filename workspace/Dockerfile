@@ -19,6 +19,7 @@ FROM laradock/workspace:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 ARG LARADOCK_PHP_VERSION
+ARG GITHUB_PROXY
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -33,8 +34,13 @@ USER root
 ARG CHANGE_SOURCE=false
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
     # Change application source from ubuntu.com to tuna.tsinghua.edu.cn source
-    sed -i "s@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
-    sed -i "s@http://.*security.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
+    if [ -e "/etc/apt/sources.list.d/ubuntu.sources" ]; then \
+      sed -i "s@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list.d/ubuntu.sources; \
+      sed -i "s@http://.*security.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list.d/ubuntu.sources; \
+    else \
+      sed -i "s@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
+      sed -i "s@http://.*security.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list; \
+    fi \
   fi;
 
 ###########################################################################
@@ -815,7 +821,9 @@ ENV NVM_NODEJS_ORG_MIRROR ${NVM_NODEJS_ORG_MIRROR}
 RUN if [ ${INSTALL_NODE} = true ]; then \
     # Install nvm (A Node Version Manager)
     mkdir -p $NVM_DIR && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
+    curl -o- ${GITHUB_PROXY}https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
+        | sed 's|https://raw.githubusercontent.com/|${GITHUB_PROXY}https://raw.githubusercontent.com/|g; s|https://github.com/|${GITHUB_PROXY}https://github.com/|g' \
+        | bash \
         && . $NVM_DIR/nvm.sh \
         && nvm install ${NODE_VERSION} \
         && nvm use ${NODE_VERSION} \
@@ -1499,7 +1507,11 @@ RUN set -eux; \
   # Docker Client:
   ###########################################################################
   if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz; \
+    if [ ${CHANGE_SOURCE} = true ]; then \
+      curl -sS https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-29.1.3.tgz -o /tmp/docker.tar.gz ; \
+    else \
+      curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-29.1.3.tgz -o /tmp/docker.tar.gz ; \
+    fi ; \
     tar -xzf /tmp/docker.tar.gz -C /tmp/; \
     cp /tmp/docker/docker* /usr/local/bin; \
     chmod +x /usr/local/bin/docker*; \
@@ -1891,7 +1903,7 @@ ARG INSTALL_EVENT=false
 
 RUN set -eux; \
   if [ ${INSTALL_EVENT} = true ]; then \
-      curl -L -o  /tmp/libevent.tar.gz https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz   &&\
+      curl -L -o  /tmp/libevent.tar.gz ${GITHUB_PROXY}https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz   &&\
       mkdir -p /tmp/libevent-php &&\
       tar -C /tmp/libevent-php -zxvf /tmp/libevent.tar.gz --strip 1 &&\
       cd /tmp/libevent-php &&\
@@ -1955,6 +1967,51 @@ RUN if [ ${INSTALL_GITHUB_CLI} = true ]; then \
     && apt install gh -y \
 ;fi
 
+###########################################################################
+# Golang:
+###########################################################################
+ARG GO_VERSION=1.26.1
+# 国内用户必配：Go 代理（加速依赖下载）
+ENV GOPROXY=https://goproxy.cn,direct \
+    GOSUMDB=sum.golang.org \
+    GOPATH=/go \
+    GOROOT=/usr/local/go \
+    PATH=$PATH:/go/bin:/usr/local/go/bin
+RUN curl -L -o go.tgz "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
+    && tar -C /usr/local -xzf go.tgz \
+    && rm go.tgz \
+    && mkdir -p $GOPATH/{src,pkg,bin} \
+    && echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc \
+    && go install github.com/air-verse/air@v1.62.0 \
+    && go install github.com/go-delve/delve/cmd/dlv@latest
+
+###########################################################################
+# Docker Compose:
+###########################################################################
+RUN mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -SL "${GITHUB_PROXY}https://github.com/docker/compose/releases/download/v5.1.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+###########################################################################
+# pipx:
+###########################################################################
+USER root
+RUN apt-get -yqq install pipx \
+    && pipx ensurepath \
+    && pipx --version \
+    && pipx install code-review-graph \
+    && pipx install claude-tap \
+    && pipx ensurepath
+
+###########################################################################
+# Claude Code:
+###########################################################################
+RUN curl -fsSL https://bun.sh/install \
+        | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
+        | bash \
+    && npm install -g @anthropic-ai/claude-code \
+    # php-lsp
+    && npm install -g intelephense
 
 #
 #--------------------------------------------------------------------------
