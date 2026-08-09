@@ -22,6 +22,8 @@ services:
     extra_hosts:
       "myapp.local": "${MYAPP_IP:-127.0.0.1}"
       "db.local": "${DB_IP:-127.0.0.1}"
+    volumes:
+      - ../php-fpm/php7.3.ini:/usr/local/etc/php/php.ini
 
   workspace-73:
     extends:
@@ -34,6 +36,8 @@ services:
     extra_hosts:
       "myapp.local": "${MYAPP_IP:-127.0.0.1}"
       "db.local": "${DB_IP:-127.0.0.1}"
+    volumes:
+      - ../php-worker/supervisord.d:/etc/supervisord.d
 
   # ---------- PHP 8.3 ----------
   php-fpm-83:
@@ -47,6 +51,8 @@ services:
     extra_hosts:
       "myapp.local": "${MYAPP_IP:-127.0.0.1}"
       "db.local": "${DB_IP:-127.0.0.1}"
+    volumes:
+      - ../php-fpm/php8.3.ini:/usr/local/etc/php/php.ini
 
   workspace-83:
     extends:
@@ -59,3 +65,5 @@ services:
     extra_hosts:
       "myapp.local": "${MYAPP_IP:-127.0.0.1}"
       "db.local": "${DB_IP:-127.0.0.1}"
+    volumes:
+      - ../php-worker/supervisord.d:/etc/supervisord.d

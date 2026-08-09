@@ -72,8 +72,9 @@ DB_IP=192.168.1.11
 
 ### 数据库
 
-- `mysql`（8.x）：宿主机端口 3306，容器名 `mysql`
-- `mysql57`（5.7）：宿主机端口 3307，容器名 `mysql57`
+- `mysql`（8.x）：宿主机端口 3306，服务名（DNS 别名）`mysql`
+- `mysql57`（5.7）：宿主机端口 3307，服务名（DNS 别名）`mysql57`
+  （两者均未设置 `container_name`，真实容器名带 `COMPOSE_PROJECT_NAME` 前缀，如 `test_mysql-1`）
 - 数据分别存于卷轴 `test_mysql-data` / `test_mysql57-data`
 
 ### 自定义服务
