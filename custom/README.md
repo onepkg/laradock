@@ -19,8 +19,7 @@ COMPOSE_FILE=docker-compose.yml:docker-compose.custom.yml
 docker-compose.custom.yml   # 总入口：include + 卷轴 + 覆盖区 + 新增服务区（个人文件，不上库）
 custom/
   php-variants.yml          # PHP 7.3 / 8.3 版本变体（extends 继承）
-  dbx/Dockerfile            # 自定义服务骨架（待填充）
-  headroom/Dockerfile       # 自定义服务骨架（待填充）
+  example-service/Dockerfile # 自定义服务模板（复制改名即新服务）
   README.md                 # 本文档
 ```
 
@@ -28,7 +27,7 @@ custom/
 
 ### 代码进命名卷轴
 
-`code-data` 卷轴（实际名 `test_code-data`，前缀来自 `COMPOSE_PROJECT_NAME`）
+`projects-data` 卷轴（实际名 `test_projects-data`，前缀来自 `COMPOSE_PROJECT_NAME`）
 挂载到 workspace / php-fpm 的 `/var/www/projects`。原 `/var/www` 宿主机构挂载保留。
 
 ```bash
@@ -79,12 +78,11 @@ DB_IP=192.168.1.11
 
 ### 自定义服务
 
-- `v2raya`：`http://localhost:2017`（需 NET_ADMIN）
-- `dbx` / `headroom`：骨架镜像，`custom/<name>/Dockerfile` 待填充
+- `example-service`：自定义服务模板，复制 `custom/example-service/` 目录改名即新服务
 
 ## 加新服务
 
-1. 需要自建镜像 → 新建 `custom/<svc>/Dockerfile`（参考 dbx 骨架的
+1. 需要自建镜像 → 新建 `custom/<svc>/Dockerfile`（参考 example-service 模板的
    长驻进程约定：带 `restart: always` 的镜像必须有前台长驻进程）
 2. 在 `docker-compose.custom.yml` 的「新增服务区」加一段服务定义
    （镜像名 / build.context / ports / volumes / networks）
