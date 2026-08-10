@@ -1,0 +1,76 @@
+# docker-compose.custom.example.yml —— Laradock 自定义扩展示例模板
+# 使用：复制本文件到仓库根目录，改名为 docker-compose.custom.yml
+# （根目录同名文件被 .gitignore 忽略，属个人配置，不会误提交）。
+# 加载方式：.env 中 COMPOSE_FILE=docker-compose.yml:docker-compose.custom.yml
+# 依赖 .env 变量：VOLUMES_DRIVER、GITHUB_PROXY
+#
+# 结构：
+#   1. include —— 加载 PHP 版本变体（custom/php-variants.yml）
+#   2. volumes —— 顶层命名卷轴
+#   3. 覆盖区 —— workspace / php-fpm 系容器统一挂载与构建参数（YAML anchor）
+#   4. 自定义服务区 —— example-service 模板
+
+include:
+  # PHP 7.3 / 8.3 版本变体
+  - path: custom/php-variants.yml
+    project_directory: .
+    env_file:
+      - php-fpm/defaults.env
+      - workspace/defaults.env
+
+volumes:
+  # 代码命名卷轴（不落宿主机盘）
+  projects-data:
+    driver: ${VOLUMES_DRIVER}
+  # 自定义服务示例数据卷
+  example-data:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+
+  # ========== 覆盖区：统一配置（仅追加，保留原有挂载/参数） ==========
+  # 卷锚点：&workspace-vols（workspace 系 = projects-data + 自定义挂载）、&projects-data（php-fpm 系）
+  # 构建参数：&github-proxy 一处定义全生效
+  # 新增变体：按所属系照抄 volumes / build.args 引用行。
+
+  workspace:
+    volumes: &workspace-vols
+      - projects-data:/var/www/projects
+      # workspace 额外自定义挂载写这里（自动同步到 workspace-73/83）
+      # - ./custom/workspace/<源>:<容器路径>:ro
+    build:
+      args: &github-proxy
+        - GITHUB_PROXY=${GITHUB_PROXY}
+  workspace-73:
+    volumes: *workspace-vols
+    build:
+      args: *github-proxy
+  workspace-83:
+    volumes: *workspace-vols
+    build:
+      args: *github-proxy
+  php-fpm:
+    volumes: &projects-data
+      - projects-data:/var/www/projects
+    build:
+      args: *github-proxy
+  php-fpm-73:
+    volumes: *projects-data
+    build:
+      args: *github-proxy
+  php-fpm-83:
+    volumes: *projects-data
+    build:
+      args: *github-proxy
+
+  # ========== 自定义服务 ==========
+
+  example-service:
+    # 自定义服务模板：复制本块 + custom/example-service/ 目录，改名即为新服务
+    build:
+      context: ./custom/example-service
+    restart: always
+    volumes:
+      - example-data:/data
+    networks:
+      - backend

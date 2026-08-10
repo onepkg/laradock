@@ -20,6 +20,7 @@ docker-compose.custom.yml   # 总入口：include + 卷轴 + 覆盖区 + 新增�
 custom/
   php-variants.yml          # PHP 7.3 / 8.3 版本变体（extends 继承）
   example-service/Dockerfile # 自定义服务模板（复制改名即新服务）
+  docker-compose.custom.example.yml  # 扩展示例模板（复制到根目录改名使用）
   README.md                 # 本文档
 ```
 
