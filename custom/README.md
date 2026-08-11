@@ -18,10 +18,11 @@ COMPOSE_FILE=docker-compose.yml:docker-compose.custom.yml
 ```
 docker-compose.custom.yml   # 总入口：include + 卷轴 + 覆盖区 + 新增服务区（个人文件，不上库）
 custom/
-  php-variants.yml          # PHP 7.3 / 8.3 版本变体（extends 继承）
+  php-variants/compose.yml  # PHP 7.3 / 8.3 版本变体（extends 继承）
   example-service/Dockerfile # 自定义服务模板（复制改名即新服务）
   docker-compose.custom.example.yml  # 扩展示例模板（复制到根目录改名使用）
   README.md                 # 本文档
+  <name>/compose.yml        # 自定义服务：每服务一个目录（services + 顶层 volumes）
 ```
 
 ## 日常使用
@@ -60,7 +61,7 @@ CLI 侧：`./laradock workspace` 进入主版本；变体用
 ### 自定义 host（extra_hosts）
 
 固定域名写在各服务的 `extra_hosts`（docker-compose.custom.yml 覆盖区、
-custom/php-variants.yml 变体），IP 在 `.env` 变量化：
+custom/php-variants/compose.yml 变体），IP 在 `.env` 变量化：
 
 ```env
 MYAPP_IP=192.168.1.10
@@ -92,6 +93,6 @@ DB_IP=192.168.1.11
 ## 升级 Laradock
 
 上游升级时直接 `git pull` 即可（本方案不改任何上游文件）。若上游改动
-`docker-compose.yml` 的 include 列表或卷轴默认值，`custom/php-variants.yml`
+`docker-compose.yml` 的 include 列表或卷轴默认值，`custom/php-variants/compose.yml`
 与 `docker-compose.custom.yml` 一般无需变动；个别默认值变更可能需要在
 `.env` 中显式覆盖。

@@ -5,33 +5,33 @@
 # 依赖 .env 变量：VOLUMES_DRIVER、GITHUB_PROXY
 #
 # 结构：
-#   1. include —— 加载 PHP 版本变体（custom/php-variants.yml）
+#   1. include —— 加载 PHP 版本变体（custom/php-variants/compose.yml）
 #   2. volumes —— 顶层命名卷轴
 #   3. 覆盖区 —— workspace / php-fpm 系容器统一挂载与构建参数（YAML anchor）
 #   4. 自定义服务区 —— example-service 模板
 
 include:
   # PHP 7.3 / 8.3 版本变体
-  - path: custom/php-variants.yml
+  - path: custom/php-variants/compose.yml
     project_directory: .
     env_file:
       - php-fpm/defaults.env
       - workspace/defaults.env
-  # 自定义服务：每服务一个 custom/<name>.yml（services + 顶层 volumes），
-  # 此处追加 include 即生效，如 custom/mysql57.yml、custom/v2raya.yml
-  - path: custom/PyTorch.yml
+  # 自定义服务：每服务一个 custom/<name>/compose.yml（services + 顶层 volumes），
+  # 此处追加 include 即生效，如 custom/mysql57/compose.yml、custom/v2raya/compose.yml
+  - path: custom/PyTorch/compose.yml
     project_directory: .
-  - path: custom/v2raya.yml
+  - path: custom/v2raya/compose.yml
     project_directory: .
-  - path: custom/dbx.yml
+  - path: custom/dbx/compose.yml
     project_directory: .
-  - path: custom/headroom.yml
+  - path: custom/headroom/compose.yml
     project_directory: .
-  - path: custom/redis-master-slave-sentinel.yml
+  - path: custom/redis-master-slave-sentinel/compose.yml
     project_directory: .
-  - path: custom/mysql57.yml
+  - path: custom/mysql57/compose.yml
     project_directory: .
-  - path: custom/mysql80.yml
+  - path: custom/mysql80/compose.yml
     project_directory: .
 
 volumes:
