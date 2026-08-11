@@ -1,4 +1,4 @@
-# docker-compose.custom.example.yml —— Laradock 自定义扩展示例模板
+# docker-compose.custom.yml.example —— Laradock 自定义扩展示例模板
 # 使用：复制本文件到仓库根目录，改名为 docker-compose.custom.yml
 # （根目录同名文件被 .gitignore 忽略，属个人配置，不会误提交）。
 # 加载方式：.env 中 COMPOSE_FILE=docker-compose.yml:docker-compose.custom.yml

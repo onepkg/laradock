@@ -21,7 +21,7 @@ custom/
   php-fpm-73/compose.yml    # PHP 7.3 变体（extends 继承，仅 php-fpm 系）
   php-fpm-83/compose.yml    # PHP 8.3 变体（extends 继承，仅 php-fpm 系）
   example-service/Dockerfile # 自定义服务模板（复制改名即新服务）
-  docker-compose.custom.example.yml  # 扩展示例模板（复制到根目录改名使用）
+  docker-compose.custom.yml.example  # 扩展示例模板（复制到根目录改名使用）
   README.md                 # 本文档
   <name>/compose.yml        # 自定义服务：每服务一个目录（services + 顶层 volumes）
 ```
