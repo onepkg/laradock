@@ -1,0 +1,25 @@
+volumes:
+  mysql57:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+
+  mysql57:
+    restart: always
+    build:
+      context: ./mysql
+      args:
+        - MYSQL_VERSION=5.7
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-default}
+      - MYSQL_USER=${MYSQL_USER:-default}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-secret}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
+      - TZ=${WORKSPACE_TIMEZONE:-Asia/Shanghai}
+    volumes:
+      - mysql57:/var/lib/mysql
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "3307:3306"
+    networks:
+      - backend

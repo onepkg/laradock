@@ -1,0 +1,20 @@
+volumes:
+  headroom-data:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+  headroom:
+    image: ghcr.io/chopratejas/headroom:latest
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      - TZ=${WORKSPACE_TIMEZONE}
+      - ANTHROPIC_TARGET_API_URL=${ANTHROPIC_TARGET_API_URL}
+      - HEADROOM_TELEMETRY=off
+      - HEADROOM_PORT=8787
+      - HEADROOM_HOST=0.0.0.0
+    volumes:
+      - headroom-data:/root/.headroom
+    networks:
+      - backend

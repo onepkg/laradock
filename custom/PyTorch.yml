@@ -1,0 +1,39 @@
+services:
+
+  pytorch-raw:
+    restart: always
+    image: pytorch/pytorch:2.10.0-cuda13.0-cudnn9-runtime
+    stdin_open: true      # 相当于docker run -i
+    tty: true             # 相当于docker run -t
+    command: bash -c "tail -f /dev/null"  # 保持容器运行
+    volumes:
+      - ~/code/ml:/app
+    working_dir: /app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all  # 使用所有 GPU
+              capabilities: [gpu]  # 必需，指定 GPU 能力
+    networks:
+      - backend
+
+  pytorch:
+    restart: always
+    build:
+      context: ./pytorch
+    volumes:
+      - ~/code/ml:/app
+      - ${DATA_PATH_HOST}/vscode-server/pytorch:/root/.vscode-server
+    ports:
+      - "8888:8888"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all  # 使用所有 GPU
+              capabilities: [gpu]  # 必需，指定 GPU 能力
+    networks:
+      - backend

@@ -17,6 +17,22 @@ include:
     env_file:
       - php-fpm/defaults.env
       - workspace/defaults.env
+  # 自定义服务：每服务一个 custom/<name>.yml（services + 顶层 volumes），
+  # 此处追加 include 即生效，如 custom/mysql57.yml、custom/v2raya.yml
+  - path: custom/PyTorch.yml
+    project_directory: .
+  - path: custom/v2raya.yml
+    project_directory: .
+  - path: custom/dbx.yml
+    project_directory: .
+  - path: custom/headroom.yml
+    project_directory: .
+  - path: custom/redis-master-slave-sentinel.yml
+    project_directory: .
+  - path: custom/mysql57.yml
+    project_directory: .
+  - path: custom/mysql80.yml
+    project_directory: .
 
 volumes:
   # 代码命名卷轴（不落宿主机盘）
@@ -24,6 +40,26 @@ volumes:
     driver: ${VOLUMES_DRIVER}
   # 自定义服务示例数据卷
   example-data:
+    driver: ${VOLUMES_DRIVER}
+  vscode-server:
+    driver: ${VOLUMES_DRIVER}
+  home-ssh:
+    driver: ${VOLUMES_DRIVER}
+  home-gitconfig:
+    driver: ${VOLUMES_DRIVER}
+  home-lingma:
+    driver: ${VOLUMES_DRIVER}
+  home-trae:
+    driver: ${VOLUMES_DRIVER}
+  home-claude:
+    driver: ${VOLUMES_DRIVER}
+  headroom-data:
+    driver: ${VOLUMES_DRIVER}
+  dbx-data:
+    driver: ${VOLUMES_DRIVER}
+  claude-mem-data:
+    driver: ${VOLUMES_DRIVER}
+  mysql:
     driver: ${VOLUMES_DRIVER}
 
 services:
@@ -38,22 +74,51 @@ services:
       - projects-data:/var/www/projects
       # workspace 额外自定义挂载写这里（自动同步到 workspace-73/83）
       # - ./custom/workspace/<源>:<容器路径>:ro
+      - /var/run/docker.sock.raw:/var/run/docker.sock
+      - mysql:/root/.laradock/mysql
+      - mysql57:/root/.laradock/mysql57
+      - mysql80:/root/.laradock/mysql80
+      - vscode-server:/root/.vscode-server
+      - home-ssh:/root/.ssh
+      - home-gitconfig:/root/.gitconfigdir
+      - home-lingma:/root/.lingma
+      - home-trae:/root/.marscode
+      - home-claude:/root/.claude
+      - claude-mem-data:/root/.claude-mem
     build:
       args: &github-proxy
         - GITHUB_PROXY=${GITHUB_PROXY}
-  workspace-73:
-    volumes: *workspace-vols
-    build:
-      args: *github-proxy
-  workspace-83:
-    volumes: *workspace-vols
-    build:
-      args: *github-proxy
+    environment:
+      # docker
+      - DOCKER_HOST=
+      - DOCKER_TLS_VERIFY=
+      - DOCKER_TLS_CERTDIR=
+      - DOCKER_CERT_PATH=
+      # node ssl
+      - NODE_OPTIONS=--openssl-legacy-provider
+      # claude code
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+      - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
+      - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
+      - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
+      - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
+      - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
+      - ENABLE_LSP_TOOL=1
+      - ENABLE_TOOL_SEARCH=true
+    # dns:
+    #   - 8.8.8.8
+    #   - 114.114.114.114
+    # extra_hosts: &extra-hosts
+    #   - "a.test:${DOCKER_HOST_IP}"
   php-fpm:
     volumes: &projects-data
       - projects-data:/var/www/projects
     build:
       args: *github-proxy
+  nginx:
+    volumes: *projects-data
   php-fpm-73:
     volumes: *projects-data
     build:
