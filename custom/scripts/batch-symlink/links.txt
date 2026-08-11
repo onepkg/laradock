@@ -1,0 +1,5 @@
+# /var/www/projects/github/onepkg/laradock/custom/scripts/batch-symlink/batch_symlink.sh /usr/local/bin/bslk
+/var/www/projects/github/onepkg/laradock/custom/laradock /usr/local/bin/laradock
+/root/.gitconfigdir/.gitconfig /root/.gitconfig
+/root/.claude/.claude.json /root/.claude.json
+/root/.claude/.agents /root/.agents
