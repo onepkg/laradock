@@ -83,6 +83,75 @@ DB_IP=192.168.1.11
 
 - `example-service`：自定义服务模板，复制 `custom/example-service/` 目录改名即新服务
 
+## 全局使用（任意目录 `ld` 命令）
+
+CLI 要求必须在 laradock 目录内运行（`require_laradock_dir`），且 `APP_CODE_PATH_HOST`
+是相对路径。用 shell 函数先 `cd` 进 laradock 目录再执行，即可在任何目录使用；
+缩写 `ld`，避免与 laradock 目录内 `./laradock` 脚本及 compose 服务名冲突。
+子 shell `( ... )` 包裹，不改变当前所在目录。
+
+### 宿主机（WSL / macOS / Linux）
+
+追加到 `~/.bashrc`（zsh 则 `~/.zshrc`）：
+
+```bash
+# ── Laradock 全局命令：任意目录可用 ──
+LARADOCK_DIR="/var/www/github.com/onepkg/laradock"   # ← 改成你的实际路径
+ld() {
+  ( cd "$LARADOCK_DIR" && ./laradock "$@" )
+}
+alias laradock='ld'
+```
+
+生效并测试：
+
+```bash
+source ~/.bashrc
+cd /tmp && ld version    # → laradock cli 1.0.0
+ld doctor                # 任意目录都行
+ld workspace             # 进开发容器
+```
+
+### workspace 容器内
+
+laradock 目录默认未挂载进容器（仅 `projects-data:/var/www/projects` 代码卷），
+需先让容器能看到 laradock 目录：
+
+1. 在 `docker-compose.custom.yml` 的 workspace 块追加挂载（宿主机真实路径）：
+
+   ```yaml
+   workspace:
+     volumes:
+       - /var/www/github.com/onepkg/laradock:/laradock
+   ```
+
+2. 容器内 `~/.bashrc` 加：
+
+   ```bash
+   LARADOCK_DIR="/laradock"        # 容器内挂载点
+   ld() { ( cd "$LARADOCK_DIR" && ./laradock "$@" ); }
+   alias laradock='ld'
+   ```
+
+> 注意：容器内 `/root/.bashrc` 在重建后丢失（除非写进镜像或挂载持久卷），
+> 常用就把挂载 + dotfiles 一起固化。
+
+### 可选：tab 补全
+
+```bash
+_ld_complete() {
+  local cmds=(setup start stop restart logs info doctor workspace enter db set settings unset edit ship test open share remove rebuild)
+  COMPREPLY=( $(compgen -W "${cmds[*]}" -- "${COMP_WORDS[COMP_CWORD]}") )
+}
+complete -F _ld_complete ld
+```
+
+### 多套环境切换
+
+```bash
+LARADOCK_DIR=/path/to/another ld ps   # 临时指向其他 laradock 副本
+```
+
 ## 加新服务
 
 1. 需要自建镜像 → 新建 `custom/<svc>/Dockerfile`（参考 example-service 模板的
