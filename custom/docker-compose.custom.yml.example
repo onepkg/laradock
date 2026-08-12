@@ -17,15 +17,24 @@ include:
     env_file:
       - workspace/defaults.env
       - custom/workspace/defaults.env
-  # PHP 7.3 / 8.3 版本变体（仅 php-fpm 系；workspace 变体已舍去）
+  # php-fpm 定制（extends 上游，安装开关等值来自 custom/php-fpm/defaults.env）
+  - path: custom/php-fpm/compose.yml
+    project_directory: .
+    env_file:
+      - php-fpm/defaults.env
+      - custom/php-fpm/defaults.env
+  # PHP 7.3 / 8.3 版本变体（仅 php-fpm 系；workspace 变体已舍去，
+  # 变体 extends 上游并共享 custom/php-fpm/defaults.env）
   - path: custom/php-fpm-73/compose.yml
     project_directory: .
     env_file:
       - php-fpm/defaults.env
+      - custom/php-fpm/defaults.env
   - path: custom/php-fpm-83/compose.yml
     project_directory: .
     env_file:
       - php-fpm/defaults.env
+      - custom/php-fpm/defaults.env
   # 自定义服务：每服务一个 custom/<name>/compose.yml（services + 顶层 volumes），
   # 此处追加 include 即生效，如 custom/mysql57/compose.yml、custom/v2raya/compose.yml
   - path: custom/PyTorch/compose.yml

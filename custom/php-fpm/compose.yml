@@ -1,0 +1,22 @@
+# php-fpm 定制：通过 extends 继承上游 php-fpm 的真实定义。
+#
+# 本文件由 docker-compose.custom.yml 通过 include + env_file 加载。
+# - env_file 提供 php-fpm/defaults.env 与 custom/php-fpm/defaults.env，
+#   使继承的 build args（BASE_IMAGE_TAG_PREFIX、INSTALL_* 等）正确解析：
+#   BASE_IMAGE_TAG_PREFIX 来自上游 defaults，PHP_FPM_INSTALL_* 覆盖项来自
+#   custom/php-fpm/defaults.env（.env 中同名变量优先级更高）。
+# - build.context 需显式写 ./php-fpm：extends 继承的相对路径会按上游
+#   文件位置（php-fpm/）解析，写成 php-fpm/php-fpm；此处改回仓库根。
+#
+# 注意：php-fpm-73/83 变体【不】extends 本文件，而是各自 extends 上游并
+# 共享本文件配套的 custom/php-fpm/defaults.env（extends 链中相对路径
+# 解析基准不一致，避免多级链）。
+
+services:
+
+  php-fpm:
+    extends:
+      file: php-fpm/compose.yml
+      service: php-fpm
+    build:
+      context: ./php-fpm
