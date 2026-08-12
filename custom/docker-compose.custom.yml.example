@@ -11,6 +11,12 @@
 #   4. 自定义服务区 —— example-service 模板
 
 include:
+  # workspace 定制（extends 上游，覆盖 build args，值来自 custom/workspace/defaults.env）
+  - path: custom/workspace/compose.yml
+    project_directory: .
+    env_file:
+      - workspace/defaults.env
+      - custom/workspace/defaults.env
   # PHP 7.3 / 8.3 版本变体（仅 php-fpm 系；workspace 变体已舍去）
   - path: custom/php-fpm-73/compose.yml
     project_directory: .
@@ -44,82 +50,36 @@ volumes:
   # 自定义服务示例数据卷
   example-data:
     driver: ${VOLUMES_DRIVER}
-  vscode-server:
-    driver: ${VOLUMES_DRIVER}
-  home-ssh:
-    driver: ${VOLUMES_DRIVER}
-  home-gitconfig:
-    driver: ${VOLUMES_DRIVER}
-  home-lingma:
-    driver: ${VOLUMES_DRIVER}
-  home-trae:
-    driver: ${VOLUMES_DRIVER}
-  home-claude:
-    driver: ${VOLUMES_DRIVER}
   headroom-data:
     driver: ${VOLUMES_DRIVER}
   dbx-data:
     driver: ${VOLUMES_DRIVER}
-  claude-mem-data:
-    driver: ${VOLUMES_DRIVER}
-  mysql:
-    driver: ${VOLUMES_DRIVER}
+  # workspace 专属卷（vscode-server、home-*、mysql 等）已随 workspace
+  # 服务迁至 custom/workspace/compose.yml 顶层声明
 
 services:
 
   # ========== 覆盖区：统一配置（仅追加，保留原有挂载/参数） ==========
-  # 卷锚点：&workspace-vols（workspace 专属 = projects-data + 自定义挂载）、&projects-data（php-fpm 系）
-  # 构建参数：&github-proxy 一处定义全生效
+  # workspace 主体已迁移至 custom/workspace/compose.yml（volumes/build/environment）。
+  # 此处按需追加 workspace 挂载（如 projects-data 代码卷），可自由增删：
+  # 改这一块即可，无需动 custom/workspace/compose.yml 模板。
+  # php-fpm 系：&projects-data 卷锚点 + &github-proxy 构建参数
+  # （YAML 锚点不能跨文件，php-fpm 系用的 &github-proxy 需在本文件重新定义）。
   # 新增变体：按所属系照抄 volumes / build.args 引用行。
 
+  # workspace 按需挂载区：projects-data 代码卷（进命名卷，不落宿主机盘）
   workspace:
     volumes: &workspace-vols
       - projects-data:/var/www/projects
-      # workspace 额外自定义挂载写这里
+      # workspace 额外自定义挂载写这里（自动合并进 custom/workspace/compose.yml）
       # - ./custom/workspace/<源>:<容器路径>:ro
-      - /var/run/docker.sock.raw:/var/run/docker.sock
-      - mysql:/root/.laradock/mysql
-      - mysql57:/root/.laradock/mysql57
-      - mysql80:/root/.laradock/mysql80
-      - vscode-server:/root/.vscode-server
-      - home-ssh:/root/.ssh
-      - home-gitconfig:/root/.gitconfigdir
-      - home-lingma:/root/.lingma
-      - home-trae:/root/.marscode
-      - home-claude:/root/.claude
-      - claude-mem-data:/root/.claude-mem
-    build:
-      args: &github-proxy
-        - GITHUB_PROXY=${GITHUB_PROXY}
-    environment:
-      # docker
-      - DOCKER_HOST=
-      - DOCKER_TLS_VERIFY=
-      - DOCKER_TLS_CERTDIR=
-      - DOCKER_CERT_PATH=
-      # node ssl
-      - NODE_OPTIONS=--openssl-legacy-provider
-      # claude code
-      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
-      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
-      - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
-      - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
-      - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
-      - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
-      - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
-      - ENABLE_LSP_TOOL=1
-      - ENABLE_TOOL_SEARCH=true
-    # dns:
-    #   - 8.8.8.8
-    #   - 114.114.114.114
-    # extra_hosts: &extra-hosts
-    #   - "a.test:${DOCKER_HOST_IP}"
+
   php-fpm:
     volumes: &projects-data
       - projects-data:/var/www/projects
     build:
-      args: *github-proxy
+      args: &github-proxy
+        - GITHUB_PROXY=${GITHUB_PROXY}
   nginx:
     volumes: *projects-data
   php-fpm-73:

@@ -1,0 +1,88 @@
+# workspace 定制：通过 extends 继承上游 workspace 的真实定义，追加自定义
+# volumes / build.args / environment（extends 对这三者是合并而非替换）。
+#
+# 本文件由 docker-compose.custom.yml 通过 include + env_file 加载。
+# - env_file 提供 workspace/defaults.env 与 custom/workspace/defaults.env，
+#   供未覆盖的 build args（INSTALL_* 等）保留上游默认。
+# - ${GITHUB_PROXY}、${ANTHROPIC_*} 等来自 .env（compose 全局插值源），无需在此声明。
+#
+# build.context 需显式写 ./workspace：extends 继承的相对路径会按上游
+# 文件位置（workspace/）解析，写成 workspace/workspace；此处改回仓库根。
+#
+# 注意：extends 不传递上游引用的命名卷顶层定义，此处引用的卷（projects-data、
+# vscode-server、home-* 等）需在本文件顶层 volumes 一并声明。
+
+volumes:
+  # 注：projects-data 代码卷挂载按需配置，由 docker-compose.custom.yml 覆盖区提供，
+  # 不在此处声明（与 php-fpm 系的 &projects-data 卷锚点同源）。
+  vscode-server:
+    driver: ${VOLUMES_DRIVER}
+  home-ssh:
+    driver: ${VOLUMES_DRIVER}
+  home-gitconfig:
+    driver: ${VOLUMES_DRIVER}
+  home-lingma:
+    driver: ${VOLUMES_DRIVER}
+  home-trae:
+    driver: ${VOLUMES_DRIVER}
+  home-claude:
+    driver: ${VOLUMES_DRIVER}
+  claude-mem-data:
+    driver: ${VOLUMES_DRIVER}
+  mysql:
+    driver: ${VOLUMES_DRIVER}
+  mysql57:
+    driver: ${VOLUMES_DRIVER}
+  mysql80:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+
+  workspace:
+    extends:
+      file: workspace/compose.yml
+      service: workspace
+    build:
+      context: ./workspace
+      args: &github-proxy
+        - GITHUB_PROXY=${GITHUB_PROXY}
+    volumes: &workspace-vols
+      # 注：projects-data:/var/www/projects 代码卷挂载按需配置，
+      # 由 docker-compose.custom.yml 覆盖区 workspace 块提供（此处不再挂载）。
+      # workspace 额外自定义挂载写这里
+      # - ./custom/workspace/<源>:<容器路径>:ro
+      - /var/run/docker.sock.raw:/var/run/docker.sock
+      - mysql:/root/.laradock/mysql
+      - mysql57:/root/.laradock/mysql57
+      - mysql80:/root/.laradock/mysql80
+      - vscode-server:/root/.vscode-server
+      - home-ssh:/root/.ssh
+      - home-gitconfig:/root/.gitconfigdir
+      - home-lingma:/root/.lingma
+      - home-trae:/root/.marscode
+      - home-claude:/root/.claude
+      - claude-mem-data:/root/.claude-mem
+    environment:
+      # docker
+      - DOCKER_HOST=
+      - DOCKER_TLS_VERIFY=
+      - DOCKER_TLS_CERTDIR=
+      - DOCKER_CERT_PATH=
+      # node ssl
+      - NODE_OPTIONS=--openssl-legacy-provider
+      # claude code
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+      - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
+      - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
+      - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
+      - CLAUDE_CODE_SUBAGENT_MODEL=${CLAUDE_CODE_SUBAGENT_MODEL}
+      - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
+      - ENABLE_LSP_TOOL=1
+      - ENABLE_TOOL_SEARCH=true
+    # dns:
+    #   - 8.8.8.8
+    #   - 114.114.114.114
+    # extra_hosts: &extra-hosts
+    #   - "a.test:${DOCKER_HOST_IP}"
