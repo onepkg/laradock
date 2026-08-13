@@ -7,8 +7,8 @@
 # 结构：
 #   1. include —— 加载 PHP 版本变体（custom/php-fpm-73|83/compose.yml）
 #   2. volumes —— 顶层命名卷轴
-#   3. 覆盖区 —— workspace / php-fpm 系容器统一挂载与构建参数（YAML anchor）
-#   4. 自定义服务区 —— example-service 模板
+#   3. 覆盖区 —— workspace / php-fpm 系容器统一挂载（YAML anchor）
+#   4. 自定义服务区 —— 每服务一个 custom/<name>/compose.yml 模板
 
 include:
   # workspace 定制（extends 上游，覆盖 build args，值来自 custom/workspace/defaults.env）
@@ -56,9 +56,6 @@ volumes:
   # 代码命名卷轴（不落宿主机盘）
   projects-data:
     driver: ${VOLUMES_DRIVER}
-  # 自定义服务示例数据卷
-  example-data:
-    driver: ${VOLUMES_DRIVER}
   headroom-data:
     driver: ${VOLUMES_DRIVER}
   dbx-data:
@@ -72,42 +69,22 @@ services:
   # workspace 主体已迁移至 custom/workspace/compose.yml（volumes/build/environment）。
   # 此处按需追加 workspace 挂载（如 projects-data 代码卷），可自由增删：
   # 改这一块即可，无需动 custom/workspace/compose.yml 模板。
-  # php-fpm 系：&projects-data 卷锚点 + &github-proxy 构建参数
-  # （YAML 锚点不能跨文件，php-fpm 系用的 &github-proxy 需在本文件重新定义）。
-  # 新增变体：按所属系照抄 volumes / build.args 引用行。
+  # php-fpm 系：&projects-data 卷锚点
+  # （YAML 锚点不能跨文件，php-fpm 系挂载在此引用锚点）。
+  # 新增变体：按所属系照抄 volumes 引用行。
 
   # workspace 按需挂载区：projects-data 代码卷（进命名卷，不落宿主机盘）
   workspace:
-    volumes: &workspace-vols
+    volumes: &projects-data
       - projects-data:/var/www/projects
       # workspace 额外自定义挂载写这里（自动合并进 custom/workspace/compose.yml）
       # - ./custom/workspace/<源>:<容器路径>:ro
 
   php-fpm:
-    volumes: &projects-data
-      - projects-data:/var/www/projects
-    build:
-      args: &github-proxy
-        - GITHUB_PROXY=${GITHUB_PROXY}
+    volumes: *projects-data
   nginx:
     volumes: *projects-data
   php-fpm-73:
     volumes: *projects-data
-    build:
-      args: *github-proxy
   php-fpm-83:
     volumes: *projects-data
-    build:
-      args: *github-proxy
-
-  # ========== 自定义服务 ==========
-
-  example-service:
-    # 自定义服务模板：复制本块 + custom/example-service/ 目录，改名即为新服务
-    build:
-      context: ./custom/example-service
-    restart: always
-    volumes:
-      - example-data:/data
-    networks:
-      - backend

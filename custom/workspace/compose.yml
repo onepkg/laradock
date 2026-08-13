@@ -44,9 +44,9 @@ services:
       service: workspace
     build:
       context: ./workspace
-      args: &github-proxy
+      args:
         - GITHUB_PROXY=${GITHUB_PROXY}
-    volumes: &workspace-vols
+    volumes:
       # 注：projects-data:/var/www/projects 代码卷挂载按需配置，
       # 由 docker-compose.custom.yml 覆盖区 workspace 块提供（此处不再挂载）。
       # workspace 额外自定义挂载写这里
