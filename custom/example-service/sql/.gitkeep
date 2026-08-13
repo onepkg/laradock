@@ -1,0 +1,1 @@
+# 把需要进容器的 SQL 文件放本目录，compose.yml 挂载到容器 /sql

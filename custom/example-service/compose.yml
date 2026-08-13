@@ -1,0 +1,20 @@
+# example-service —— 自定义服务模板（compose 定义）
+# 使用：复制本目录为 custom/<你的服务>/，修改 Dockerfile 与
+# docker-compose.custom.yml 中对应服务块（build.context / 服务名），
+# 并在 include 列表追加 - path: custom/<你的服务>/compose.yml。
+volumes:
+  example-data:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+
+  example-service:
+    restart: always
+    build:
+      context: ./custom/example-service
+    volumes:
+      - example-data:/data
+      # SQL 文件进容器：放 custom/example-service/sql/ 下即挂载到 /sql
+      - ./custom/example-service/sql:/sql
+    networks:
+      - backend
