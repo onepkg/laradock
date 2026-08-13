@@ -49,8 +49,10 @@ include:
     project_directory: .
   - path: custom/mysql57/compose.yml
     project_directory: .
+    env_file: mysql/defaults.env
   - path: custom/mysql80/compose.yml
     project_directory: .
+    env_file: mysql/defaults.env
 
 volumes:
   # 代码命名卷轴（不落宿主机盘）
