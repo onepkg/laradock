@@ -1,5 +1,5 @@
 volumes:
-  mysql57:
+  mysql57-data:
     driver: ${VOLUMES_DRIVER}
 
 services:
@@ -17,7 +17,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
       - TZ=${WORKSPACE_TIMEZONE:-Asia/Shanghai}
     volumes:
-      - mysql57:/var/lib/mysql
+      - mysql57-data:/var/lib/mysql
       - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     ports:
       - "3307:3306"

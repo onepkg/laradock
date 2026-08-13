@@ -10,30 +10,30 @@
 # 文件位置（workspace/）解析，写成 workspace/workspace；此处改回仓库根。
 #
 # 注意：extends 不传递上游引用的命名卷顶层定义，此处引用的卷（projects-data、
-# vscode-server、home-* 等）需在本文件顶层 volumes 一并声明。
+# vscode-server-data、*-data 等）需在本文件顶层 volumes 一并声明。
 
 volumes:
   # 注：projects-data 代码卷挂载按需配置，由 docker-compose.custom.yml 覆盖区提供，
   # 不在此处声明（与 php-fpm 系的 &projects-data 卷锚点同源）。
-  vscode-server:
+  vscode-server-data:
     driver: ${VOLUMES_DRIVER}
-  home-ssh:
+  ssh-data:
     driver: ${VOLUMES_DRIVER}
-  home-gitconfig:
+  gitconfig-data:
     driver: ${VOLUMES_DRIVER}
-  home-lingma:
+  lingma-data:
     driver: ${VOLUMES_DRIVER}
-  home-trae:
+  trae-data:
     driver: ${VOLUMES_DRIVER}
-  home-claude:
+  claude-data:
     driver: ${VOLUMES_DRIVER}
   claude-mem-data:
     driver: ${VOLUMES_DRIVER}
-  mysql:
+  mysql-data:
     driver: ${VOLUMES_DRIVER}
-  mysql57:
+  mysql57-data:
     driver: ${VOLUMES_DRIVER}
-  mysql80:
+  mysql80-data:
     driver: ${VOLUMES_DRIVER}
 
 services:
@@ -52,15 +52,15 @@ services:
       # workspace 额外自定义挂载写这里
       # - ./custom/workspace/<源>:<容器路径>:ro
       - /var/run/docker.sock.raw:/var/run/docker.sock
-      - mysql:/root/.laradock/mysql
-      - mysql57:/root/.laradock/mysql57
-      - mysql80:/root/.laradock/mysql80
-      - vscode-server:/root/.vscode-server
-      - home-ssh:/root/.ssh
-      - home-gitconfig:/root/.gitconfigdir
-      - home-lingma:/root/.lingma
-      - home-trae:/root/.marscode
-      - home-claude:/root/.claude
+      - mysql-data:/root/.laradock/mysql
+      - mysql57-data:/root/.laradock/mysql57
+      - mysql80-data:/root/.laradock/mysql80
+      - vscode-server-data:/root/.vscode-server
+      - ssh-data:/root/.ssh
+      - gitconfig-data:/root/.gitconfigdir
+      - lingma-data:/root/.lingma
+      - trae-data:/root/.marscode
+      - claude-data:/root/.claude
       - claude-mem-data:/root/.claude-mem
     environment:
       # docker

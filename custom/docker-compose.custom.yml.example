@@ -56,12 +56,6 @@ volumes:
   # 代码命名卷轴（不落宿主机盘）
   projects-data:
     driver: ${VOLUMES_DRIVER}
-  headroom-data:
-    driver: ${VOLUMES_DRIVER}
-  dbx-data:
-    driver: ${VOLUMES_DRIVER}
-  # workspace 专属卷（vscode-server、home-*、mysql 等）已随 workspace
-  # 服务迁至 custom/workspace/compose.yml 顶层声明
 
 services:
 
