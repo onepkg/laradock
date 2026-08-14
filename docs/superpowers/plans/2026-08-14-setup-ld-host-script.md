@@ -203,6 +203,12 @@ detect_laradock_dir() {
 main() {
     local rc dir
     rc="$(detect_rc_file)"
+    # 命令替换使 detect_rc_file 在子 shell 运行，其内 IS_ZSH 赋值不传播；
+    # 由 rc 路径反推 zsh 标记（文件名含 zsh 视为 zsh 目标）
+    case "$rc" in
+        *zsh*) IS_ZSH=1 ;;
+        *)     IS_ZSH=0 ;;
+    esac
     dir="$(detect_laradock_dir)"
     echo -e "${CYAN}目标文件: $rc${NC}"
     echo -e "${CYAN}LARADOCK_DIR: $dir${NC}"
@@ -306,6 +312,12 @@ backup_rc() {
 main() {
     local rc dir block ans
     rc="$(detect_rc_file)"
+    # 命令替换使 detect_rc_file 在子 shell 运行，其内 IS_ZSH 赋值不传播；
+    # 由 rc 路径反推 zsh 标记（文件名含 zsh 视为 zsh 目标）
+    case "$rc" in
+        *zsh*) IS_ZSH=1 ;;
+        *)     IS_ZSH=0 ;;
+    esac
     dir="$(detect_laradock_dir)"
     block="$(build_block "$dir")"
 
