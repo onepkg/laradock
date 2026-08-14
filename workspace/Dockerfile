@@ -1993,25 +1993,25 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 ###########################################################################
-# pipx:
+# tools: pipx/tmux/bun
 ###########################################################################
 USER root
-RUN apt-get -yqq install pipx \
-    && pipx ensurepath \
-    && pipx --version \
-    && pipx install code-review-graph \
-    && pipx install claude-tap \
-    && pipx ensurepath
+RUN apt-get -yqq install pipx && \
+    pipx ensurepath && \
+    pipx --version && \
+    apt-get -yqq install tmux && \
+    curl -fsSL https://bun.sh/install \
+      | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
+      | bash
 
 ###########################################################################
-# Claude Code:
+# Harness: Claude Code / Codex:
 ###########################################################################
-RUN curl -fsSL https://bun.sh/install \
-        | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
-        | bash \
-    && npm install -g @anthropic-ai/claude-code \
-    # php-lsp
-    && npm install -g intelephense
+RUN npm install -g @anthropic-ai/claude-code && \
+    npm install -g @openai/codex && \
+    npm install -g intelephense && \
+    pipx install code-review-graph && \
+    pipx install claude-tap
 
 #
 #--------------------------------------------------------------------------
