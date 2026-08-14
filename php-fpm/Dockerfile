@@ -19,6 +19,7 @@ FROM laradock/php-fpm:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 ARG LARADOCK_PHP_VERSION
+ARG GITHUB_PROXY
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -879,9 +880,9 @@ RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
     if [ $(php -r "echo PHP_MAJOR_VERSION;") = "8" ]; then \
       cd /tmp && \
       if [ ${IMAGEMAGICK_VERSION} = "latest" ]; then \
-        git clone https://github.com/Imagick/imagick; \
+        git clone ${GITHUB_PROXY}https://github.com/Imagick/imagick; \
       else \
-        git clone --branch ${IMAGEMAGICK_VERSION} https://github.com/Imagick/imagick; \
+        git clone --branch ${IMAGEMAGICK_VERSION} ${GITHUB_PROXY}https://github.com/Imagick/imagick; \
       fi && \
       cd imagick && \
       phpize && \

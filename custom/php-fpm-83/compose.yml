@@ -16,8 +16,6 @@ services:
       context: ./php-fpm
       args:
         - LARADOCK_PHP_VERSION=8.3
-    extra_hosts:
-      "myapp.local": "${MYAPP_IP:-127.0.0.1}"
-      "db.local": "${DB_IP:-127.0.0.1}"
+        - GITHUB_PROXY=${GITHUB_PROXY}
     volumes:
       - ./php-fpm/php8.3.ini:/usr/local/etc/php/php.ini

@@ -20,3 +20,5 @@ services:
       service: php-fpm
     build:
       context: ./php-fpm
+      args:
+        - GITHUB_PROXY=${GITHUB_PROXY}
