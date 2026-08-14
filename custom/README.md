@@ -92,16 +92,22 @@ CLI 要求必须在 laradock 目录内运行（`require_laradock_dir`），且 `
 
 ### 宿主机（WSL / macOS / Linux）
 
-追加到 `~/.bashrc`（zsh 则 `~/.zshrc`）：
+推荐一键配置（自动检测 bash/zsh、自动推导路径、幂等 + 备份替换手抄版）：
 
 ```bash
-# ── Laradock 全局命令：任意目录可用 ──
-LARADOCK_DIR="/var/www/github.com/onepkg/laradock"   # ← 改成你的实际路径
-ld() {
-  ( cd "$LARADOCK_DIR" && ./laradock "$@" )
-}
-alias laradock='ld'
+custom/scripts/setup_ld.sh            # 预览并确认后写入（回车默认确认）
+custom/scripts/setup_ld.sh --yes      # 跳过确认直接写入
+custom/scripts/setup_ld.sh --dry-run  # 只预览不写入
 ```
+
+| 参数 | 说明 |
+|---|---|
+| `--file <rc>` | 指定目标 rc 文件（默认按 `$SHELL` 检测 `~/.bashrc` / `~/.zshrc`）|
+| `--dir <路径>` | 指定 `LARADOCK_DIR`（默认自动推导仓库根目录）|
+| `--yes` | 跳过确认 |
+| `--dry-run` | 只预览不写入 |
+
+脚本默认已包含 tab 补全（zsh 自动加 `bashcompinit`）。
 
 生效并测试：
 
@@ -110,6 +116,17 @@ source ~/.bashrc
 cd /tmp && ld version    # → laradock cli 1.0.0
 ld doctor                # 任意目录都行
 ld workspace             # 进开发容器
+```
+
+或手动添加以下内容（脚本写入的等价物）：
+
+```bash
+# ── Laradock 全局命令：任意目录可用 ──
+LARADOCK_DIR="/var/www/github.com/onepkg/laradock"   # ← 改成你的实际路径
+ld() {
+  ( cd "$LARADOCK_DIR" && ./laradock "$@" )
+}
+alias laradock='ld'
 ```
 
 ### workspace 容器内
@@ -136,7 +153,10 @@ laradock 目录默认未挂载进容器（仅 `projects-data:/var/www/projects` 
 > 注意：容器内 `/root/.bashrc` 在重建后丢失（除非写进镜像或挂载持久卷），
 > 常用就把挂载 + dotfiles 一起固化。
 
-### 可选：tab 补全
+### 可选：手动 tab 补全
+
+`setup_ld.sh` 默认已包含，无需手动添加；手动方式如下（zsh 需先
+`autoload -Uz bashcompinit && bashcompinit`）：
 
 ```bash
 _ld_complete() {
