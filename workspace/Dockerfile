@@ -889,8 +889,8 @@ RUN if [ ${NPM_REGISTRY} ]; then \
 ;fi
 
 # Mount .npmrc into home folder
-COPY ./.npmrc /root/.npmrc
-COPY ./.npmrc /home/laradock/.npmrc
+# COPY ./.npmrc /root/.npmrc
+# COPY ./.npmrc /home/laradock/.npmrc
 
 
 ###########################################################################
