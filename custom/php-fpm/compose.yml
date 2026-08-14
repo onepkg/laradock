@@ -22,3 +22,8 @@ services:
       context: ./php-fpm
       args:
         - GITHUB_PROXY=${GITHUB_PROXY}
+    volumes:
+      # 代码卷显式重挂：extends 继承的相对路径按上游文件位置（php-fpm/）解析，
+      # ${APP_CODE_PATH_HOST}=../ 会被错解析为仓库根目录；此处按项目目录解析为
+      # 上级目录，compose 按容器目标路径去重后覆盖继承的错误挂载。
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
