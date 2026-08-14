@@ -76,4 +76,62 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo -e "${CYAN}参数解析完成: FILE='$FILE_ARG' DIR='$DIR_ARG' YES=$YES DRY=$DRY_RUN${NC}"
+# ---------- 目标 rc 文件检测 ----------
+# IS_ZSH=1 时补全需加 bashcompinit（zsh 兼容 bash 补全语法）
+IS_ZSH=0
+detect_rc_file() {
+    local shell_base
+    if [[ -n "$FILE_ARG" ]]; then
+        # 文件名含 zsh 视为 zsh 目标（如 --file ~/.zshrc）
+        if [[ "$FILE_ARG" == *zsh* ]]; then
+            IS_ZSH=1
+        else
+            IS_ZSH=0
+        fi
+        echo "$FILE_ARG"
+        return 0
+    fi
+    shell_base="${SHELL##*/}"
+    case "$shell_base" in
+        bash)
+            IS_ZSH=0
+            echo "$HOME/.bashrc"
+            ;;
+        zsh)
+            IS_ZSH=1
+            echo "$HOME/.zshrc"
+            ;;
+        *)
+            echo -e "${RED}错误: 无法从 SHELL=$SHELL 判断 rc 文件${NC}" >&2
+            echo -e "${YELLOW}提示: 请用 --file <rc文件> 显式指定${NC}" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# ---------- LARADOCK_DIR 推导 ----------
+detect_laradock_dir() {
+    local script_dir repo_root
+    if [[ -n "$DIR_ARG" ]]; then
+        echo "$DIR_ARG"
+        return 0
+    fi
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if ! repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null)"; then
+        echo -e "${RED}错误: 无法自动推导 LARADOCK_DIR${NC}" >&2
+        echo -e "${YELLOW}提示: 请用 --dir <路径> 显式指定${NC}" >&2
+        exit 1
+    fi
+    echo "$repo_root"
+}
+
+main() {
+    local rc dir
+    rc="$(detect_rc_file)"
+    dir="$(detect_laradock_dir)"
+    echo -e "${CYAN}目标文件: $rc${NC}"
+    echo -e "${CYAN}LARADOCK_DIR: $dir${NC}"
+    echo -e "${CYAN}IS_ZSH: $IS_ZSH${NC}"
+}
+
+main "$@"
