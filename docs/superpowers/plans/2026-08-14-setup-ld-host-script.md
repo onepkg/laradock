@@ -508,6 +508,12 @@ HOME="$TMP/home2" SHELL=/bin/bash bash "$SETUP" --dir /opt/test --yes >/dev/null
 check "bash 写 .bashrc" test -f "$TMP/home2/.bashrc"
 check "bash 不含 bashcompinit" ! grep -q 'bashcompinit' "$TMP/home2/.bashrc"
 
+# 8. 真实 source 验证：写入的配置块 source 后函数与 alias 可用
+#    （reviewer 补充：验证运行时真实行为，非仅 grep 存在性）
+check "source 后 ld 函数可用" bash -c "source '$RC' && type ld >/dev/null 2>&1"
+check "source 后 alias 可用" bash -c "source '$RC' && alias laradock >/dev/null 2>&1"
+check "source 后补全函数可用" bash -c "source '$RC' && type _ld_complete >/dev/null 2>&1"
+
 echo "-------------------"
 echo "结果: PASS=$PASS FAIL=$FAIL"
 [[ $FAIL -eq 0 ]]
@@ -518,7 +524,7 @@ echo "结果: PASS=$PASS FAIL=$FAIL"
 ```bash
 chmod +x custom/scripts/tests/test_setup_ld.sh
 bash custom/scripts/tests/test_setup_ld.sh
-# 期望: 每个 check 都输出 ✔，结尾 结果: PASS=16 FAIL=0
+# 期望: 每个 check 都输出 ✔，结尾 结果: PASS=19 FAIL=0
 ```
 
 （若某一项失败，按 systematic-debugging 排查 setup_ld.sh 对应函数后重跑。）
@@ -607,7 +613,7 @@ complete -F _ld_complete ld
 ```bash
 # 行为测试全绿
 bash custom/scripts/tests/test_setup_ld.sh
-# 期望: 结果: PASS=16 FAIL=0
+# 期望: 结果: PASS=19 FAIL=0
 
 # 真实场景干跑（不写文件）
 bash custom/scripts/setup_ld.sh --dry-run
@@ -632,4 +638,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 - **Spec 覆盖**：脚本行为（检测/推导/幂等/备份/确认/写入/zsh）→ Task 1-3；测试 → Task 4；README → Task 5；YAGNI 范围（无卸载/无容器内/无模板）→ 全程未引入。✓
 - **占位符扫描**：无 TDD/TBD/TODO；所有代码块为最终内容；验证命令给出期望输出。✓
-- **一致性**：`END_MARK`、`# ── Laradock 全局命令结束 ──`、`IS_ZSH`、`FILE_ARG`/`DIR_ARG`/`YES`/`DRY_RUN` 在 Task 1-3 间名称一致；测试脚本断言与 Task 3 验证命令一致（16 项 PASS 数与测试脚本实际 check 数吻合）。✓
+- **一致性**：`END_MARK`、`# ── Laradock 全局命令结束 ──`、`IS_ZSH`、`FILE_ARG`/`DIR_ARG`/`YES`/`DRY_RUN` 在 Task 1-3 间名称一致；测试脚本断言与 Task 3 验证命令一致（19 项 PASS 数与测试脚本实际 check 数吻合）。✓
