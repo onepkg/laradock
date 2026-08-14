@@ -2007,11 +2007,12 @@ RUN apt-get -yqq install pipx && \
 ###########################################################################
 # Harness: Claude Code / Codex:
 ###########################################################################
-RUN npm install -g @anthropic-ai/claude-code && \
-    npm install -g @openai/codex && \
-    npm install -g intelephense && \
+RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code && \
+    npm install -g --registry=${NPM_REGISTRY} @openai/codex && \
+    npm install -g --registry=${NPM_REGISTRY} intelephense && \
     pipx install code-review-graph && \
-    pipx install claude-tap
+    pipx install claude-tap && \
+    npm install -g --registry=${NPM_REGISTRY} @dbx-app/mcp-server
 
 #
 #--------------------------------------------------------------------------
