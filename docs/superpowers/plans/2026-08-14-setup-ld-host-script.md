@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 提供一个宿主机一键脚本，自动把 `LARADOCK_DIR + ld() + alias + tab 补全` 配置块写入 `~/.bashrc`（zsh 则 `~/.zshrc`），并更新 README 说明。
+**Goal:** 提供一个宿主机一键脚本，自动把 `LARADOCK_DIR + ldk() + alias + tab 补全` 配置块写入 `~/.bashrc`（zsh 则 `~/.zshrc`），并更新 README 说明。
 
 **Architecture:** 单个 bash 脚本 `custom/scripts/setup_ld.sh`（仿既有 `batch_symlink.sh` 风格）+ 一个行为测试脚本。脚本内部按「参数解析 → 目标 rc 检测 → LARADOCK_DIR 推导 → 幂等检查 → 备份 → 确认 → 写入」流水线组织，配置块以 `# ── Laradock 全局命令结束 ──` 标记边界，支持幂等与备份替换。
 
@@ -37,7 +37,7 @@
 #!/usr/bin/env bash
 #===========================================================
 # 脚本名称: setup_ld.sh
-# 功能: 宿主机一键配置 Laradock 全局命令（ld / alias / tab 补全）
+# 功能: 宿主机一键配置 Laradock 全局命令（ldk / alias / tab 补全）
 # 用法: ./setup_ld.sh [--file <rc文件>] [--dir <laradock路径>] [--yes] [--dry-run] [-h]
 #   --file <rc>    指定目标 rc 文件（跳过 shell 检测）
 #   --dir <路径>   指定 LARADOCK_DIR（跳过 git 推导）
@@ -273,16 +273,16 @@ build_block() {
 
 # ── Laradock 全局命令：任意目录可用 ──
 LARADOCK_DIR="$dir"
-ld() {
+ldk() {
   ( cd "\$LARADOCK_DIR" && ./laradock "\$@" )
 }
-alias laradock='ld'
-_ld_complete() {
+alias laradock='ldk'
+_ldk_complete() {
   local cmds=(setup start stop restart logs info doctor workspace enter db set settings unset edit ship test open share remove rebuild)
   COMPREPLY=( \$(compgen -W "\${cmds[*]}" -- "\${COMP_WORDS[COMP_CWORD]}") )
 }
 ${compinit_line}
-complete -F _ld_complete ld
+complete -F _ldk_complete ldk
 # ── Laradock 全局命令结束 ──
 EOF
 }
@@ -294,9 +294,9 @@ is_installed() {
     [[ -f "$1" ]] && grep -qF "$END_MARK" "$1"
 }
 
-# 检测到无标记的手抄版 ld() / alias 时才需要备份
+# 检测到无标记的手抄版 ldk() / alias 时才需要备份
 has_manual_version() {
-    [[ -f "$1" ]] && grep -qE '^[[:space:]]*ld\(\)|^[[:space:]]*alias[[:space:]]+laradock=' "$1"
+    [[ -f "$1" ]] && grep -qE '^[[:space:]]*ldk\(\)|^[[:space:]]*alias[[:space:]]+laradock=' "$1"
 }
 
 backup_rc() {
@@ -360,7 +360,7 @@ main() {
     printf '%s\n' "$block" >> "$rc"
     echo -e "${GREEN}✔ 已写入 $rc${NC}"
     echo -e "${CYAN}生效: source $rc${NC}"
-    echo -e "${CYAN}验证: cd /tmp && ld version; ld doctor${NC}"
+    echo -e "${CYAN}验证: cd /tmp && ldk version; ldk doctor${NC}"
 }
 
 main "$@"
@@ -376,9 +376,9 @@ T=$(mktemp -d)
 bash custom/scripts/setup_ld.sh --file "$T/rc1" --dir /opt/test --yes
 # 期望: 输出 已写入 $T/rc1
 grep -c 'LARADOCK_DIR="/opt/test"' "$T/rc1"           # 1
-grep -c '^ld()' "$T/rc1"                              # 1
-grep -c "alias laradock='ld'" "$T/rc1"                # 1
-grep -c 'complete -F _ld_complete ld' "$T/rc1"        # 1
+grep -c '^ldk()' "$T/rc1"                              # 1
+grep -c "alias laradock='ldk'" "$T/rc1"                # 1
+grep -c 'complete -F _ldk_complete ldk' "$T/rc1"        # 1
 grep -c 'bashcompinit' "$T/rc1"                       # 0（bash 目标）
 
 # 幂等：再次运行不追加
@@ -388,10 +388,10 @@ N2=$(wc -l < "$T/rc1")
 test "$N1" = "$N2" && echo "幂等 OK"                  # 幂等 OK
 
 # 手抄版备份替换
-printf 'ld() { echo manual; }\n' > "$T/rc2"
+printf 'ldk() { echo manual; }\n' > "$T/rc2"
 bash custom/scripts/setup_ld.sh --file "$T/rc2" --dir /opt/test --yes >/dev/null
 ls "$T"/rc2.bak.* >/dev/null && echo "备份 OK"        # 备份 OK
-grep -q "alias laradock='ld'" "$T/rc2" && echo "替换 OK"
+grep -q "alias laradock='ldk'" "$T/rc2" && echo "替换 OK"
 
 # dry-run 不写
 bash custom/scripts/setup_ld.sh --file "$T/rc3" --dir /opt/test --dry-run >/dev/null
@@ -472,9 +472,9 @@ RC="$TMP/rc_test"
 bash "$SETUP" --file "$RC" --dir /opt/test --yes >/dev/null
 check "rc 文件已创建" test -f "$RC"
 check "含 LARADOCK_DIR" grep -q 'LARADOCK_DIR="/opt/test"' "$RC"
-check "含 ld()" grep -q '^ld()' "$RC"
-check "含 alias" grep -q "alias laradock='ld'" "$RC"
-check "含补全" grep -q "complete -F _ld_complete ld" "$RC"
+check "含 ldk()" grep -q '^ldk()' "$RC"
+check "含 alias" grep -q "alias laradock='ldk'" "$RC"
+check "含补全" grep -q "complete -F _ldk_complete ldk" "$RC"
 check "含结束标记" grep -q '# ── Laradock 全局命令结束 ──' "$RC"
 
 # 3. 幂等：再次运行不追加
@@ -485,11 +485,11 @@ check "幂等不重复追加" test "$N1" = "$N2"
 
 # 4. 手抄版备份替换
 RC2="$TMP/rc_manual"
-printf 'ld() { echo manual; }\n' > "$RC2"
+printf 'ldk() { echo manual; }\n' > "$RC2"
 bash "$SETUP" --file "$RC2" --dir /opt/test --yes >/dev/null
 BAK=$(find "$TMP" -maxdepth 1 -name 'rc_manual.bak.*')
 check "手抄版触发备份" test -n "$BAK"
-check "手抄版被替换" grep -q "alias laradock='ld'" "$RC2"
+check "手抄版被替换" grep -q "alias laradock='ldk'" "$RC2"
 
 # 5. dry-run 不写
 RC3="$TMP/rc_dry"
@@ -510,9 +510,9 @@ check "bash 不含 bashcompinit" bash -c "! grep -q 'bashcompinit' \"$TMP/home2/
 
 # 8. 真实 source 验证：写入的配置块 source 后函数与 alias 可用
 #    （reviewer 补充：验证运行时真实行为，非仅 grep 存在性）
-check "source 后 ld 函数可用" bash -c "source '$RC' && type ld >/dev/null 2>&1"
+check "source 后 ldk 函数可用" bash -c "source '$RC' && type ldk >/dev/null 2>&1"
 check "source 后 alias 可用" bash -c "source '$RC' && alias laradock >/dev/null 2>&1"
-check "source 后补全函数可用" bash -c "source '$RC' && type _ld_complete >/dev/null 2>&1"
+check "source 后补全函数可用" bash -c "source '$RC' && type _ldk_complete >/dev/null 2>&1"
 
 echo "-------------------"
 echo "结果: PASS=$PASS FAIL=$FAIL"
@@ -578,9 +578,9 @@ custom/scripts/setup_ld.sh --dry-run  # 只预览不写入
 
 ```bash
 source ~/.bashrc
-cd /tmp && ld version    # → laradock cli 1.0.0
-ld doctor                # 任意目录都行
-ld workspace             # 进开发容器
+cd /tmp && ldk version    # → laradock cli 1.0.0
+ldk doctor                # 任意目录都行
+ldk workspace             # 进开发容器
 ```
 
 或手动添加以下内容（脚本写入的等价物）：
@@ -588,10 +588,10 @@ ld workspace             # 进开发容器
 ```bash
 # ── Laradock 全局命令：任意目录可用 ──
 LARADOCK_DIR="/var/www/github.com/onepkg/laradock"   # ← 改成你的实际路径
-ld() {
+ldk() {
   ( cd "$LARADOCK_DIR" && ./laradock "$@" )
 }
-alias laradock='ld'
+alias laradock='ldk'
 ```
 
 ### 可选：手动 tab 补全
@@ -600,11 +600,11 @@ alias laradock='ld'
 `autoload -Uz bashcompinit && bashcompinit`）：
 
 ```bash
-_ld_complete() {
+_ldk_complete() {
   local cmds=(setup start stop restart logs info doctor workspace enter db set settings unset edit ship test open share remove rebuild)
   COMPREPLY=( $(compgen -W "${cmds[*]}" -- "${COMP_WORDS[COMP_CWORD]}") )
 }
-complete -F _ld_complete ld
+complete -F _ldk_complete ldk
 ```
 ````
 

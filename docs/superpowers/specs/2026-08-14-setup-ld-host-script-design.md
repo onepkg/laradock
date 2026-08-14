@@ -1,4 +1,4 @@
-# 宿主机 `ld` 一键配置脚本设计（setup_ld.sh）
+# 宿主机 `ldk` 一键配置脚本设计（setup_ld.sh）
 
 日期：2026-08-14
 状态：已获用户确认
@@ -6,7 +6,7 @@
 ## 背景与目标
 
 custom/README.md 的「全局使用」章节要求用户在宿主机（WSL / macOS / Linux）手动把
-`LARADOCK_DIR + ld() + alias + tab 补全` 抄进 `~/.bashrc`（zsh 则 `~/.zshrc`），
+`LARADOCK_DIR + ldk() + alias + tab 补全` 抄进 `~/.bashrc`（zsh 则 `~/.zshrc`），
 还需要手动把 `LARADOCK_DIR` 改成实际路径。本设计提供一键脚本自动化此过程，
 保留手动方式作为备选。
 
@@ -14,7 +14,7 @@ custom/README.md 的「全局使用」章节要求用户在宿主机（WSL / mac
 
 - **场景**：仅宿主机配置（含 tab 补全）；**不做**容器内配置、不做卸载功能。
 - **Shell**：自动检测 bash / zsh（`$SHELL` 末尾判断），zsh 用 `~/.zshrc`。
-- **冲突处理**：幂等 + 备份替换。重复运行不重复追加；已有手抄版 `ld()` 时
+- **冲突处理**：幂等 + 备份替换。重复运行不重复追加；已有手抄版 `ldk()` 时
   先备份整份 rc 文件再写入。
 - **交互**：确认式 + 彩色输出；`--yes` 跳过确认。
 
@@ -52,29 +52,29 @@ usage()、循环参数解析。
    兼容符号链接/相对路径调用。
 3. **幂等检查**：grep 配置块尾部标记 `# ── Laradock 全局命令结束 ──`；
    已存在则绿色提示"已配置"退出 0。
-4. **备份替换**：目标 rc 存在但无标记、且含手抄版 `ld()` 或 `alias laradock` 时，
+4. **备份替换**：目标 rc 存在但无标记、且含手抄版 `ldk()` 或 `alias laradock` 时，
    先 `cp` 备份为 `~/.bashrc.bak.<时间戳>`（时间戳用 `date +%Y%m%d%H%M%S`）。
    目标 rc 不存在时直接创建，无需备份。
 5. **确认**：展示完整配置块 + 目标文件路径 + `LARADOCK_DIR`，`[Y/n]` 回车默认 Y；
    `--yes` 跳过；`--dry-run` 只展示不写。
 6. **写入**：heredoc 追加配置块。
 7. **收尾**：彩色输出完成信息 + 提示 `source ~/.bashrc` 生效与验证命令
-   （`cd /tmp && ld version`、`ld doctor`）。
+   （`cd /tmp && ldk version`、`ldk doctor`）。
 
 ### 写入的配置块
 
 ```bash
 # ── Laradock 全局命令：任意目录可用 ──
 LARADOCK_DIR="<推导或指定的路径>"
-ld() {
+ldk() {
   ( cd "$LARADOCK_DIR" && ./laradock "$@" )
 }
-alias laradock='ld'
-_ld_complete() {
+alias laradock='ldk'
+_ldk_complete() {
   local cmds=(setup start stop restart logs info doctor workspace enter db set settings unset edit ship test open share remove rebuild)
   COMPREPLY=( $(compgen -W "${cmds[*]}" -- "${COMP_WORDS[COMP_CWORD]}") )
 }
-complete -F _ld_complete ld
+complete -F _ldk_complete ldk
 # ── Laradock 全局命令结束 ──
 ```
 
@@ -108,6 +108,6 @@ autoload -Uz bashcompinit && bashcompinit
 - `./setup_ld.sh --dry-run`：预览正确，不写文件。
 - `./setup_ld.sh --yes`：首次运行写入成功，rc 文件含配置块。
 - 再次运行：提示已配置，不重复追加。
-- 含手抄版 `ld()` 的 rc：先备份 `.bak.<时间戳>` 再替换。
+- 含手抄版 `ldk()` 的 rc：先备份 `.bak.<时间戳>` 再替换。
 - `--file /tmp/testrc`：不依赖 `$SHELL`，写入指定文件。
 - zsh 环境（`SHELL=/usr/bin/zsh`，若可用）：写 `~/.zshrc` 且补全含 bashcompinit。
