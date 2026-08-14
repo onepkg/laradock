@@ -44,12 +44,22 @@ while [[ $# -gt 0 ]]; do
                 usage
                 exit 1
             fi
+            if [[ -z "$2" || "$2" == -* ]]; then
+                echo -e "${RED}错误: --file 需要非空参数${NC}"
+                usage
+                exit 1
+            fi
             FILE_ARG="$2"
             shift 2
             ;;
         --dir)
             if [[ $# -lt 2 ]]; then
                 echo -e "${RED}错误: --dir 需要一个参数${NC}"
+                usage
+                exit 1
+            fi
+            if [[ -z "$2" || "$2" == -* ]]; then
+                echo -e "${RED}错误: --dir 需要非空参数${NC}"
                 usage
                 exit 1
             fi
@@ -82,23 +92,16 @@ IS_ZSH=0
 detect_rc_file() {
     local shell_base
     if [[ -n "$FILE_ARG" ]]; then
-        # 文件名含 zsh 视为 zsh 目标（如 --file ~/.zshrc）
-        if [[ "$FILE_ARG" == *zsh* ]]; then
-            IS_ZSH=1
-        else
-            IS_ZSH=0
-        fi
+        # 文件名含 zsh 视为 zsh 目标（如 --file ~/.zshrc）；IS_ZSH 由 main 从 rc 路径反推
         echo "$FILE_ARG"
         return 0
     fi
     shell_base="${SHELL##*/}"
     case "$shell_base" in
         bash)
-            IS_ZSH=0
             echo "$HOME/.bashrc"
             ;;
         zsh)
-            IS_ZSH=1
             echo "$HOME/.zshrc"
             ;;
         *)
@@ -186,8 +189,8 @@ main() {
     fi
 
     # 预览
-    echo -e "${CYAN}将要写入: $rc${NC}"
-    echo -e "${CYAN}LARADOCK_DIR: $dir${NC}"
+    echo -e "${CYAN}将要写入: "$rc"${NC}"
+    echo -e "${CYAN}LARADOCK_DIR: "$dir"${NC}"
     echo -e "${YELLOW}--- 配置块预览 ---${NC}"
     echo "$block"
     echo -e "${YELLOW}--------------------${NC}"
