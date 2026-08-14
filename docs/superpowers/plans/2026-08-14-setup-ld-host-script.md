@@ -506,7 +506,7 @@ check "zsh 含 bashcompinit" grep -q 'autoload -Uz bashcompinit' "$TMP/home/.zsh
 mkdir -p "$TMP/home2"
 HOME="$TMP/home2" SHELL=/bin/bash bash "$SETUP" --dir /opt/test --yes >/dev/null
 check "bash 写 .bashrc" test -f "$TMP/home2/.bashrc"
-check "bash 不含 bashcompinit" ! grep -q 'bashcompinit' "$TMP/home2/.bashrc"
+check "bash 不含 bashcompinit" grep -vq 'bashcompinit' "$TMP/home2/.bashrc"
 
 # 8. 真实 source 验证：写入的配置块 source 后函数与 alias 可用
 #    （reviewer 补充：验证运行时真实行为，非仅 grep 存在性）
