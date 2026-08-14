@@ -83,16 +83,18 @@ DB_IP=192.168.1.11
 
 - `example-service`：自定义服务模板，复制 `custom/example-service/` 目录改名即新服务
 
-## 全局使用（任意目录 `ld` 命令）
+## 全局使用（任意目录 `ldk` 命令）
 
 CLI 要求必须在 laradock 目录内运行（`require_laradock_dir`），且 `APP_CODE_PATH_HOST`
 是相对路径。用 shell 函数先 `cd` 进 laradock 目录再执行，即可在任何目录使用；
-缩写 `ld`，避免与 laradock 目录内 `./laradock` 脚本及 compose 服务名冲突。
+缩写 `ldk`，避免与 laradock 目录内 `./laradock` 脚本及 compose 服务名冲突
+（也避免与系统既有的 `ld` 命令冲突）。
 子 shell `( ... )` 包裹，不改变当前所在目录。
 
 ### 宿主机（WSL / macOS / Linux）
 
-推荐一键配置（自动检测 bash/zsh、自动推导路径、幂等 + 备份替换手抄版）：
+推荐一键配置（自动检测 bash/zsh、自动推导路径、幂等 + 备份替换手抄版，
+写入后自动 `source` 立即生效）：
 
 ```bash
 custom/scripts/setup_ld.sh            # 预览并确认后写入（回车默认确认）
@@ -109,13 +111,12 @@ custom/scripts/setup_ld.sh --dry-run  # 只预览不写入
 
 脚本默认已包含 tab 补全（zsh 自动加 `bashcompinit`）。
 
-生效并测试：
+脚本写入后自动 `source` 立即生效（新开终端亦自动加载）。验证：
 
 ```bash
-source ~/.bashrc
-cd /tmp && ld version    # → laradock cli 1.0.0
-ld doctor                # 任意目录都行
-ld workspace             # 进开发容器
+cd /tmp && ldk version    # → laradock cli 1.0.0
+ldk doctor                # 任意目录都行
+ldk workspace             # 进开发容器
 ```
 
 或手动添加以下内容（脚本写入的等价物）：
@@ -123,10 +124,10 @@ ld workspace             # 进开发容器
 ```bash
 # ── Laradock 全局命令：任意目录可用 ──
 LARADOCK_DIR="/var/www/github.com/onepkg/laradock"   # ← 改成你的实际路径
-ld() {
+ldk() {
   ( cd "$LARADOCK_DIR" && ./laradock "$@" )
 }
-alias laradock='ld'
+alias laradock='ldk'
 ```
 
 ### workspace 容器内
@@ -146,8 +147,8 @@ laradock 目录默认未挂载进容器（仅 `projects-data:/var/www/projects` 
 
    ```bash
    LARADOCK_DIR="/laradock"        # 容器内挂载点
-   ld() { ( cd "$LARADOCK_DIR" && ./laradock "$@" ); }
-   alias laradock='ld'
+   ldk() { ( cd "$LARADOCK_DIR" && ./laradock "$@" ); }
+   alias laradock='ldk'
    ```
 
 > 注意：容器内 `/root/.bashrc` 在重建后丢失（除非写进镜像或挂载持久卷），
@@ -159,17 +160,17 @@ laradock 目录默认未挂载进容器（仅 `projects-data:/var/www/projects` 
 `autoload -Uz bashcompinit && bashcompinit`）：
 
 ```bash
-_ld_complete() {
+_ldk_complete() {
   local cmds=(setup start stop restart logs info doctor workspace enter db set settings unset edit ship test open share remove rebuild)
   COMPREPLY=( $(compgen -W "${cmds[*]}" -- "${COMP_WORDS[COMP_CWORD]}") )
 }
-complete -F _ld_complete ld
+complete -F _ldk_complete ldk
 ```
 
 ### 多套环境切换
 
 ```bash
-LARADOCK_DIR=/path/to/another ld ps   # 临时指向其他 laradock 副本
+LARADOCK_DIR=/path/to/another ldk ps  # 临时指向其他 laradock 副本
 ```
 
 ## 加新服务

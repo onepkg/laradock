@@ -29,14 +29,16 @@ check() {
 check "bash 语法检查" bash -n "$SETUP"
 check "-h 退出码 0" bash "$SETUP" -h
 
-# 2. 首次写入（--file + --dir + --yes）
+# 2. 首次写入（--file + --dir + --yes）且自动 source
 RC="$TMP/rc_test"
-bash "$SETUP" --file "$RC" --dir /opt/test --yes >/dev/null
+OUT=$(bash "$SETUP" --file "$RC" --dir /opt/test --yes)
 check "rc 文件已创建" test -f "$RC"
+SRC_OK=$(printf '%s' "$OUT" | grep -c '已自动 source')
+check "写入后自动 source" test "$SRC_OK" -ge 1
 check "含 LARADOCK_DIR" grep -q 'LARADOCK_DIR="/opt/test"' "$RC"
-check "含 ld()" grep -q '^ld()' "$RC"
-check "含 alias" grep -q "alias laradock='ld'" "$RC"
-check "含补全" grep -q "complete -F _ld_complete ld" "$RC"
+check "含 ldk()" grep -q '^ldk()' "$RC"
+check "含 alias" grep -q "alias laradock='ldk'" "$RC"
+check "含补全" grep -q "complete -F _ldk_complete ldk" "$RC"
 check "含结束标记" grep -q '# ── Laradock 全局命令结束 ──' "$RC"
 
 # 3. 幂等：再次运行不追加
@@ -47,11 +49,11 @@ check "幂等不重复追加" test "$N1" = "$N2"
 
 # 4. 手抄版备份替换
 RC2="$TMP/rc_manual"
-printf 'ld() { echo manual; }\n' > "$RC2"
+printf 'ldk() { echo manual; }\n' > "$RC2"
 bash "$SETUP" --file "$RC2" --dir /opt/test --yes >/dev/null
 BAK=$(find "$TMP" -maxdepth 1 -name 'rc_manual.bak.*')
 check "手抄版触发备份" test -n "$BAK"
-check "手抄版被替换" grep -q "alias laradock='ld'" "$RC2"
+check "手抄版被替换" grep -q "alias laradock='ldk'" "$RC2"
 
 # 5. dry-run 不写
 RC3="$TMP/rc_dry"
@@ -71,9 +73,9 @@ check "bash 写 .bashrc" test -f "$TMP/home2/.bashrc"
 check "bash 不含 bashcompinit" bash -c "! grep -q 'bashcompinit' \"$TMP/home2/.bashrc\""
 
 # 8. 真实 source 验证：写入的配置块 source 后函数与 alias 可用
-check "source 后 ld 函数可用" bash -c "source '$RC' && type ld >/dev/null 2>&1"
+check "source 后 ldk 函数可用" bash -c "source '$RC' && type ldk >/dev/null 2>&1"
 check "source 后 alias 可用" bash -c "source '$RC' && alias laradock >/dev/null 2>&1"
-check "source 后补全函数可用" bash -c "source '$RC' && type _ld_complete >/dev/null 2>&1"
+check "source 后补全函数可用" bash -c "source '$RC' && type _ldk_complete >/dev/null 2>&1"
 
 echo "-------------------"
 echo "结果: PASS=$PASS FAIL=$FAIL"
