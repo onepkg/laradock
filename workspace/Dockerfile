@@ -1993,13 +1993,14 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 ###########################################################################
-# tools: pipx/tmux/bun
+# tools: pipx/tmux/bun/ripgrep
 ###########################################################################
 USER root
 RUN apt-get -yqq install pipx && \
     pipx ensurepath && \
     pipx --version && \
     apt-get -yqq install tmux && \
+    apt-get -yqq install ripgrep && \
     curl -fsSL https://bun.sh/install \
       | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
       | bash
