@@ -125,8 +125,50 @@ detect_laradock_dir() {
     echo "$repo_root"
 }
 
+# ---------- 配置块构建 ----------
+# 注意: heredoc 内 \$ 保留为字面量（写入 rc 后运行时才展开）
+build_block() {
+    local dir="$1"
+    local compinit_line=""
+    [[ "$IS_ZSH" == "1" ]] && compinit_line="autoload -Uz bashcompinit && bashcompinit"
+    cat <<EOF
+
+# ── Laradock 全局命令：任意目录可用 ──
+LARADOCK_DIR="$dir"
+ld() {
+  ( cd "\$LARADOCK_DIR" && ./laradock "\$@" )
+}
+alias laradock='ld'
+_ld_complete() {
+  local cmds=(setup start stop restart logs info doctor workspace enter db set settings unset edit ship test open share remove rebuild)
+  COMPREPLY=( \$(compgen -W "\${cmds[*]}" -- "\${COMP_WORDS[COMP_CWORD]}") )
+}
+${compinit_line}
+complete -F _ld_complete ld
+# ── Laradock 全局命令结束 ──
+EOF
+}
+
+# ---------- 幂等 / 备份检测 ----------
+END_MARK='# ── Laradock 全局命令结束 ──'
+
+is_installed() {
+    [[ -f "$1" ]] && grep -qF "$END_MARK" "$1"
+}
+
+# 检测到无标记的手抄版 ld() / alias 时才需要备份
+has_manual_version() {
+    [[ -f "$1" ]] && grep -qE '^[[:space:]]*ld\(\)|^[[:space:]]*alias[[:space:]]+laradock=' "$1"
+}
+
+backup_rc() {
+    local bak="${1}.bak.$(date +%Y%m%d%H%M%S)"
+    cp "$1" "$bak"
+    echo "$bak"
+}
+
 main() {
-    local rc dir
+    local rc dir block ans
     rc="$(detect_rc_file)"
     # 命令替换使 detect_rc_file 在子 shell 运行，其内 IS_ZSH 赋值不传播；
     # 由 rc 路径反推 zsh 标记（文件名含 zsh 视为 zsh 目标）
@@ -135,9 +177,48 @@ main() {
         *)     IS_ZSH=0 ;;
     esac
     dir="$(detect_laradock_dir)"
-    echo -e "${CYAN}目标文件: $rc${NC}"
+    block="$(build_block "$dir")"
+
+    # 幂等：已配置则直接退出
+    if is_installed "$rc"; then
+        echo -e "${GREEN}✔ $rc 已配置 Laradock 全局命令，无需重复安装${NC}"
+        exit 0
+    fi
+
+    # 预览
+    echo -e "${CYAN}将要写入: $rc${NC}"
     echo -e "${CYAN}LARADOCK_DIR: $dir${NC}"
-    echo -e "${CYAN}IS_ZSH: $IS_ZSH${NC}"
+    echo -e "${YELLOW}--- 配置块预览 ---${NC}"
+    echo "$block"
+    echo -e "${YELLOW}--------------------${NC}"
+
+    if [[ "$DRY_RUN" == "1" ]]; then
+        echo -e "${YELLOW}[dry-run] 未写入任何文件${NC}"
+        exit 0
+    fi
+
+    # 确认（--yes 跳过）
+    if [[ "$YES" == "0" ]]; then
+        read -r -p "确认写入？[Y/n] " ans
+        if [[ "$ans" =~ ^[Nn] ]]; then
+            echo -e "${YELLOW}已取消${NC}"
+            exit 0
+        fi
+    fi
+
+    # 备份手抄版（若存在）
+    if has_manual_version "$rc"; then
+        local bak
+        bak="$(backup_rc "$rc")"
+        echo -e "${YELLOW}检测到已有的手抄版配置，已备份到 $bak${NC}"
+    fi
+
+    # 写入
+    mkdir -p "$(dirname "$rc")"
+    printf '%s\n' "$block" >> "$rc"
+    echo -e "${GREEN}✔ 已写入 $rc${NC}"
+    echo -e "${CYAN}生效: source $rc${NC}"
+    echo -e "${CYAN}验证: cd /tmp && ld version; ld doctor${NC}"
 }
 
 main "$@"
