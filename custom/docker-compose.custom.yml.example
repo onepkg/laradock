@@ -60,6 +60,9 @@ volumes:
   # 代码命名卷轴（不落宿主机盘）
   projects-data:
     driver: ${VOLUMES_DRIVER}
+  # 上游 mysql 服务数据卷轴（原为宿主机 bind mount：${DATA_PATH_HOST}/mysql）
+  mysql-data:
+    driver: ${VOLUMES_DRIVER}
 
 services:
 
@@ -86,3 +89,9 @@ services:
     volumes: *projects-data
   php-fpm-83:
     volumes: *projects-data
+
+  # 上游 mysql 服务：数据卷改挂载到 mysql-data 命名卷（覆盖即替换整个 volumes 列表，须带上 initdb 挂载）
+  mysql:
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
