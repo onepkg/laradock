@@ -55,7 +55,9 @@ services:
       # 由 docker-compose.custom.yml 覆盖区 workspace 块提供（此处不再挂载）。
       # workspace 额外自定义挂载写这里
       # - ./custom/workspace/<源>:<容器路径>:ro
-      - /var/run/docker.sock.raw:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
+      # windows上使用Hyper-V
+      # - /var/run/docker.sock.raw:/var/run/docker.sock
       - mysql-data:/root/.laradock/mysql
       - mysql57-data:/root/.laradock/mysql57
       - mysql80-data:/root/.laradock/mysql80
