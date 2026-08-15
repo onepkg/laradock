@@ -1993,14 +1993,13 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 ###########################################################################
-# tools: pipx/tmux/bun/ripgrep
+# tools
 ###########################################################################
 USER root
-RUN apt-get -yqq install pipx && \
+RUN apt-get -yqq install tmux ripgrep fd-find fzf bat jq wget httpie htop lsof strace iproute2 pipx && \
     pipx ensurepath && \
     pipx --version && \
-    apt-get -yqq install tmux && \
-    apt-get -yqq install ripgrep && \
+    pip install --break-system-packages requests httpx beautifulsoup4 lxml python-docx python-pptx markdown && \
     curl -fsSL https://bun.sh/install \
       | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
       | bash
@@ -2008,12 +2007,9 @@ RUN apt-get -yqq install pipx && \
 ###########################################################################
 # Harness: Claude Code / Codex:
 ###########################################################################
-RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code && \
-    npm install -g --registry=${NPM_REGISTRY} @openai/codex && \
-    npm install -g --registry=${NPM_REGISTRY} intelephense && \
-    pipx install code-review-graph && \
-    pipx install claude-tap && \
-    npm install -g --registry=${NPM_REGISTRY} @dbx-app/mcp-server
+RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code @openai/codex intelephense @dbx-app/mcp-server && \
+    pipx install code-review-graph claude-tap && \
+    pipx ensurepath
 
 #
 #--------------------------------------------------------------------------
