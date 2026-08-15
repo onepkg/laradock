@@ -1,0 +1,28 @@
+
+services:
+  holyclaude:
+    image: coderluii/holyclaude:latest
+    container_name: holyclaude
+    restart: unless-stopped
+    shm_size: 2g
+    cap_add:
+      - SYS_ADMIN
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    ports:
+      - "127.0.0.1:3011:3001"
+    volumes:
+      - ${APP_CODE_PATH_HOST}:/workspace
+    environment:
+      - TZ=${WORKSPACE_TIMEZONE}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+      - ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}
+      - ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}
+      - ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}
+      - CLAUDE_CODE_SUBAGENT_MODEL=d${CLAUDE_CODE_SUBAGENT_MODEL}
+      - CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}
+    networks:
+      - backend

@@ -53,6 +53,8 @@ include:
   - path: custom/mysql80/compose.yml
     project_directory: .
     env_file: mysql/defaults.env
+  - path: custom/holyclaude/compose.yml
+    project_directory: .
 
 volumes:
   # 代码命名卷轴（不落宿主机盘）
