@@ -2007,9 +2007,12 @@ RUN apt-get -yqq install tmux ripgrep fd-find fzf bat jq wget httpie htop lsof s
 ###########################################################################
 # Harness: Claude Code / Codex:
 ###########################################################################
-RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code @openai/codex intelephense @dbx-app/mcp-server && \
+RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code @openai/codex intelephense @dbx-app/mcp-server @codegraph/cli repomix claude-monitor && \
     pipx install code-review-graph claude-tap && \
-    pipx ensurepath
+    pipx ensurepath && \
+    curl -fsSL ${GITHUB_PROXY}https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | \
+      sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' | \
+      sh
 
 #
 #--------------------------------------------------------------------------
