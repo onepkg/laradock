@@ -2012,7 +2012,9 @@ RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code @openai/
     pipx ensurepath && \
     curl -fsSL ${GITHUB_PROXY}https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | \
       sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' | \
-      sh
+      sh && \
+      echo >> ~/.bashrc && \
+      echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 
 #
 #--------------------------------------------------------------------------

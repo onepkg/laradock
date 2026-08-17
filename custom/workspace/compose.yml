@@ -35,6 +35,8 @@ volumes:
     driver: ${VOLUMES_DRIVER}
   mysql80-data:
     driver: ${VOLUMES_DRIVER}
+  gh-data:
+    driver: ${VOLUMES_DRIVER}
 
 services:
 
@@ -68,6 +70,7 @@ services:
       - trae-data:/root/.marscode
       - claude-data:/root/.claude
       - claude-mem-data:/root/.claude-mem
+      - gh-data:/root/.config/gh
     environment:
       # docker
       - DOCKER_HOST=
