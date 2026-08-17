@@ -38,7 +38,7 @@ volumes:
 
 services:
 
-  workspace:
+  workspace: &workspace-common
     extends:
       file: workspace/compose.yml
       service: workspace
@@ -92,3 +92,20 @@ services:
     #   - 114.114.114.114
     # extra_hosts: &extra-hosts
     #   - "a.test:${DOCKER_HOST_IP}"
+
+  # PHP 7.3 / 8.3 变体：merge &workspace-common（继承定制 env/数据卷），
+  # extends 上游基础定义由锚点带入，仅覆盖 LARADOCK_PHP_VERSION。
+  workspace-73:
+    <<: *workspace-common
+    build:
+      context: ./workspace
+      args:
+        - LARADOCK_PHP_VERSION=7.3
+        - GITHUB_PROXY=${GITHUB_PROXY}
+  workspace-83:
+    <<: *workspace-common
+    build:
+      context: ./workspace
+      args:
+        - LARADOCK_PHP_VERSION=8.3
+        - GITHUB_PROXY=${GITHUB_PROXY}

@@ -17,14 +17,16 @@ include:
     env_file:
       - workspace/defaults.env
       - custom/workspace/defaults.env
+  # workspace PHP 版本变体（workspace-73/83 定义在 custom/workspace/compose.yml，
+  # merge &workspace-common 锚点继承定制 env/数据卷，仅覆盖 LARADOCK_PHP_VERSION）
   # php-fpm 定制（extends 上游，安装开关等值来自 custom/php-fpm/defaults.env）
   - path: custom/php-fpm/compose.yml
     project_directory: .
     env_file:
       - php-fpm/defaults.env
       - custom/php-fpm/defaults.env
-  # PHP 7.3 / 8.3 版本变体（仅 php-fpm 系；workspace 变体已舍去，
-  # 变体 extends 上游并共享 custom/php-fpm/defaults.env）
+  # PHP 7.3 / 8.3 版本变体（php-fpm 系与 workspace 系；变体 extends 上游，
+  # php-fpm 系共享 custom/php-fpm/defaults.env，workspace 系共享 workspace 系 defaults.env）
   - path: custom/php-fpm-73/compose.yml
     project_directory: .
     env_file:
@@ -80,6 +82,10 @@ services:
       - projects-data:/var/www/projects
       # workspace 额外自定义挂载写这里（自动合并进 custom/workspace/compose.yml）
       # - ./custom/workspace/<源>:<容器路径>:ro
+  workspace-73:
+    volumes: *projects-data
+  workspace-83:
+    volumes: *projects-data
 
   php-fpm:
     volumes: *projects-data
