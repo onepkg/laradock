@@ -1996,25 +1996,28 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
 # tools
 ###########################################################################
 USER root
+ENV PATH="/root/.local/bin:${PATH}"
 RUN apt-get -yqq install tmux ripgrep fd-find fzf bat jq wget httpie htop lsof strace iproute2 pipx && \
     pipx ensurepath && \
     pipx --version && \
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    uv --version && \
     pip install --break-system-packages requests httpx beautifulsoup4 lxml python-docx python-pptx markdown && \
     curl -fsSL https://bun.sh/install \
       | sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' \
-      | bash
+      | bash && \
+    echo >> /root/.bashrc && \
+    echo 'export PATH="/root/.local/bin:$PATH"' >> /root/.bashrc
 
 ###########################################################################
 # Harness: Claude Code / Codex:
 ###########################################################################
 RUN npm install -g --registry=${NPM_REGISTRY} @anthropic-ai/claude-code @openai/codex intelephense @dbx-app/mcp-server @colbymchenry/codegraph repomix && \
-    pipx install code-review-graph claude-tap && \
-    pipx ensurepath && \
+    uv tool install code-review-graph && \
+    uv tool install claude-tap && \
     curl -fsSL ${GITHUB_PROXY}https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | \
       sed 's|https://github.com|${GITHUB_PROXY}https://github.com|g' | \
-      sh && \
-      echo >> ~/.bashrc && \
-      echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+      sh
 
 #
 #--------------------------------------------------------------------------
