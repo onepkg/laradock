@@ -1997,7 +1997,8 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
 ###########################################################################
 USER root
 ENV PATH="/root/.local/bin:${PATH}"
-RUN apt-get -yqq install tmux ripgrep fd-find fzf bat jq wget httpie htop lsof strace iproute2 pipx && \
+RUN apt-get update && \
+    apt-get -yqq install tmux ripgrep fd-find fzf bat jq wget httpie htop lsof strace iproute2 pipx && \
     pipx ensurepath && \
     pipx --version && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
